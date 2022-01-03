@@ -4,7 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"net/http"
 
+	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 )
 
@@ -14,9 +16,9 @@ func main() {
 	connStr := fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable",
 		"root",
 		"postgres",
-		"blog-db",
+		"auth-db",
 		"5432",
-		"blog_service_db")
+		"auth_service_db")
 
 	fmt.Println(connStr)
 	db, err := sql.Open("postgres", connStr)
@@ -26,7 +28,7 @@ func main() {
 	}
 	defer db.Close()
 
-	selectQuer := `SELECT "name" FROM "blogs"`
+	selectQuer := `SELECT "name" FROM "users"`
 
 	rows, rErr := db.Query(selectQuer)
 
@@ -44,7 +46,14 @@ func main() {
 			break
 		}
 
-		fmt.Println("BLOG-NAME!!!!!", name)
+		fmt.Println("USER-NAME!!!!!", name)
 	}
+
+	r := mux.NewRouter()
+
+	r.HandleFunc("/auth", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, "Hello from auth")
+	})
+	http.ListenAndServe(":8004", r)
 
 }
