@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -50,10 +51,18 @@ func main() {
 	}
 
 	r := mux.NewRouter()
+	ar := r.PathPrefix("/auth").Subrouter()
 
-	r.HandleFunc("/auth", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, "Hello from auth")
+	ar.HandleFunc("", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode("auth service default encoder")
+	})
+
+	ar.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode("auth service login encoder")
 	})
 	http.ListenAndServe(":8004", r)
-
 }
