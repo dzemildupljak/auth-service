@@ -1,59 +1,32 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
-	_ "github.com/lib/pq"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 func main() {
-	fmt.Println("Hello from blog service!!!")
+	fmt.Println("Hello from auth service!!!")
 
-	connStr := fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable",
-		"root",
-		"postgres",
-		"auth-db",
-		"5432",
-		"auth_service_db")
+	dsn := "host=auth-db user=root password=postgres dbname=auth_service_db port=5432 sslmode=disable"
 
-	fmt.Println(connStr)
-	db, err := sql.Open("postgres", connStr)
+	_, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err != nil {
-		log.Fatal("connStr", err)
-	}
-	defer db.Close()
-
-	selectQuer := `SELECT "name" FROM "users"`
-
-	rows, rErr := db.Query(selectQuer)
-
-	if rErr != nil {
-		log.Fatal("select data", rErr)
-	}
-
-	defer rows.Close()
-	for rows.Next() {
-		var name string
-
-		err = rows.Scan(&name)
-		if err != nil {
-			log.Fatal("rows NEXT", err)
-			break
-		}
-
-		fmt.Println("USER-NAME!!!!!", name)
+		fmt.Println("Connection failed")
+	} else {
+		fmt.Println("Connection succeed")
 	}
 
 	r := mux.NewRouter()
 	ar := r.PathPrefix("/auth").Subrouter()
 
-	ar.HandleFunc("", func(w http.ResponseWriter, r *http.Request) {
+	ar.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode("auth service default encoder")
