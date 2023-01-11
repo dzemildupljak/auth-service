@@ -9,6 +9,7 @@ import (
 
 func Load() {
 	filePath := ".env"
+	environment := os.Getenv("ENVIRONMENT")
 
 	f, err := os.Open(filePath)
 	if err != nil {
@@ -29,5 +30,9 @@ func Load() {
 	for _, l := range lines {
 		pair := strings.Split(l, "=")
 		os.Setenv(pair[0], pair[1])
+	}
+
+	if environment == "SERVICE_DEV" {
+		os.Setenv("POSTGRES_DB_HOST", "service"+os.Getenv("POSTGRES_DB_HOST"))
 	}
 }

@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/dzemildupljak/auth-service/internal/domain"
@@ -22,7 +21,6 @@ func NewAuthHttpHandler(srv authservice.AuthService) *AuthHttpHandler {
 
 func (handler *AuthHttpHandler) Signin(w http.ResponseWriter, r *http.Request) {
 	handler.service.Signin(domain.UserLogin{})
-	fmt.Println("(handler *AuthHttpHandler) Signin(w http.ResponseWriter, r *http.Request) \n\n\n ")
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
