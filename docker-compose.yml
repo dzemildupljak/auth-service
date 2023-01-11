@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  # -----------------------
+  # auth service
+  # -----------------------
+  service-auth-db:
+    image: postgres
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER_AUTH}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD_AUTH}
+      - POSTGRES_DB=${POSTGRES_DB_AUTH}
+    ports:
+      - "5434:5432"
+    volumes:
+      - service_auth_data:/var/lib/postgresql/data
+  service-auth-app:
+    container_name: service-auth-app
+    image: auth-app-img-dev
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - service-auth-db
+    volumes:
+      - ./:/app
+    ports:
+      - 4004:8004
+
+volumes:
+  service_auth_data:
