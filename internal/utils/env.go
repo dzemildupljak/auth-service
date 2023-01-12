@@ -33,6 +33,6 @@ func Load() {
 	}
 
 	if environment == "SERVICE_DEV" {
-		os.Setenv("POSTGRES_DB_HOST", "service"+os.Getenv("POSTGRES_DB_HOST"))
+		os.Setenv("POSTGRES_DB_HOST", os.Getenv("POSTGRES_DB_SERVICE_HOST"))
 	}
 }

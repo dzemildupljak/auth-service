@@ -21,12 +21,13 @@ func NewAuthService(authrepo ports.AuthRepository) *AuthService {
 
 func (auth *AuthService) Signin(user domain.UserLogin) (types.SigninTokens, error) {
 	// get user by email and check if exists from adapter(e.g db)
-	usr, err := auth.repo.GetUserByMail(context.Background(), user.Email)
+	_, err := auth.repo.GetUserByMail(context.Background(), user.Email)
 	if err != nil {
 		return types.SigninTokens{}, err
 	}
+
 	// compare passwords
-	utils.ComparePasswords(usr.Password, "")
+	utils.ComparePasswords(utils.HashAndSalt("sifra123"), "sifra123")
 	// authenticate
 
 	// generate jwt tokens (access, refresh)
