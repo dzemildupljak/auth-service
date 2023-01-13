@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   # -----------------------
-  # auth service
+  # auth service db
   # -----------------------
   service-auth-db:
     image: postgres
@@ -14,6 +14,9 @@ services:
       - "5434:5432"
     volumes:
       - service_auth_data:/var/lib/postgresql/data
+  # -----------------------
+  # auth service
+  # -----------------------
   service-auth-app:
     environment:
       - ENVIRONMENT=SERVICE_DEV

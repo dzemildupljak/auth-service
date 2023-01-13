@@ -4,12 +4,14 @@ import (
 	"context"
 
 	"github.com/dzemildupljak/auth-service/internal/domain"
+	"gorm.io/gorm"
 )
 
 type PgAuthRepo struct {
+	db gorm.DB
 }
 
-func NewPgAuthRepo() *PgAuthRepo {
+func NewPgAuthRepo(dbConn gorm.DB) *PgAuthRepo {
 	return &PgAuthRepo{}
 }
 
