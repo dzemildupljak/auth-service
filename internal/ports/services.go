@@ -7,6 +7,7 @@ import (
 
 type AuthService interface {
 	Signin(user domain.UserLogin) (types.SigninTokens, error)
+	Signup(user domain.SignupUserParams) error
 
 	// Authenticate(reqUser *domain.User, user *domain.User) bool
 	// GenerateAccessToken(user *domain.User) (string, error)

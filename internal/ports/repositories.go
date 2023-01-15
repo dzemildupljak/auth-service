@@ -10,6 +10,8 @@ type AuthRepository interface {
 	GetListusers(ctx context.Context) ([]domain.User, error)
 	GetUserById(ctx context.Context, id int64) (domain.User, error)
 	GetUserByMail(ctx context.Context, mail string) (domain.User, error)
+	CreateRegisterUser(ctx context.Context, usr domain.User) error
+
 	// DeleteUserById(ctx context.Context, id int64) error
 	// GetCompleteListusers(ctx context.Context) ([]domain.User, error)
 	// UpdateUser(ctx context.Context, arg domain.UpdateUserParams) (domain.User, error)

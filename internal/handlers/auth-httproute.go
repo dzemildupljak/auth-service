@@ -16,5 +16,6 @@ func AuthRoute(r *mux.Router, authhdl AuthHttpHandler) {
 		json.NewEncoder(w).Encode("auth service default encoder")
 	})
 
-	ar.HandleFunc("/login", authhdl.Signin)
+	ar.HandleFunc("/login", authhdl.Signin).Methods("POST")
+	ar.HandleFunc("/signup", authhdl.Signup).Methods("POST")
 }
