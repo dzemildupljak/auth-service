@@ -1,6 +1,6 @@
 package types
 
 type SigninTokens struct {
-	Access_token  string
-	Refresh_token string
+	Access_token  string `json:"access_token"`
+	Refresh_token string `json:"refresh_token"`
 }

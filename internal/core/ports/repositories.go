@@ -3,7 +3,7 @@ package ports
 import (
 	"context"
 
-	"github.com/dzemildupljak/auth-service/internal/domain"
+	"github.com/dzemildupljak/auth-service/internal/core/domain"
 )
 
 type AuthRepository interface {
@@ -15,7 +15,6 @@ type AuthRepository interface {
 	// DeleteUserById(ctx context.Context, id int64) error
 	// GetCompleteListusers(ctx context.Context) ([]domain.User, error)
 	// UpdateUser(ctx context.Context, arg domain.UpdateUserParams) (domain.User, error)
-	// CreateRegisterUser(ctx context.Context, arg domain.CreateRegisterUserParams) error
 	// GetLogedUserByEmai(ctx context.Context, username string) (domain.ShowLoginUser, error)
 	// GetUserByEmail(ctx context.Context, email string) (domain.User, error)
 	// GetBasicUserById(ctx context.Context, id int64) (domain.ShowUserParams, error)
@@ -23,4 +22,11 @@ type AuthRepository interface {
 	// ChangePassword(ctx context.Context, arg domain.ChangePasswordParams) error
 	// GenerateResetPasswordCode(ctx context.Context, arg domain.GenerateResetPasswordCodeParams) error
 	// CreateOauthUser(ctx context.Context, arg domain.CreateOauthUserParams) (domain.User, error)
+}
+
+type JwtRepository interface {
+	GenerateAccessToken(usrId int64) (string, error)
+	ValidateAccessToken(acctoken string) error
+	GenerateRefreshToken(usrId int64) (string, error)
+	ValidateRefreshToken(reftoken string) (int64, error)
 }

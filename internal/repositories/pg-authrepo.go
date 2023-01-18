@@ -1,9 +1,9 @@
-package authrepo
+package repositories
 
 import (
 	"context"
 
-	"github.com/dzemildupljak/auth-service/internal/domain"
+	"github.com/dzemildupljak/auth-service/internal/core/domain"
 	"gorm.io/gorm"
 )
 
@@ -22,11 +22,11 @@ func (pgarepo *PgAuthRepo) GetListusers(ctx context.Context) ([]domain.User, err
 }
 
 func (pgarepo *PgAuthRepo) GetUserById(ctx context.Context, id int64) (domain.User, error) {
-	usr := domain.TbUser{}
+	usr := domain.User{}
 	pgarepo.db.WithContext(ctx).Table("users").Where("Id = ?", id).First(&usr)
 
 	return domain.User{
-		Id:         int64(usr.ID),
+		Id:         int64(usr.Id),
 		Username:   usr.Username,
 		Password:   usr.Password,
 		Name:       usr.Name,
@@ -37,24 +37,15 @@ func (pgarepo *PgAuthRepo) GetUserById(ctx context.Context, id int64) (domain.Us
 }
 
 func (pgarepo *PgAuthRepo) GetUserByMail(ctx context.Context, mail string) (domain.User, error) {
-	usr := domain.TbUser{}
-	usrQuery := domain.TbUser{Email: mail}
+	usr := domain.User{}
+	usrQuery := domain.User{Email: mail}
 	res := pgarepo.db.First(&usr, usrQuery)
 
-	return domain.User{}, res.Error
+	return usr, res.Error
 }
 
 func (pgarepo *PgAuthRepo) CreateRegisterUser(ctx context.Context, user domain.User) error {
-	usr := domain.TbUser{
-		Name:       user.Name,
-		Username:   user.Username,
-		Email:      user.Email,
-		Password:   user.Password,
-		Address:    user.Address,
-		Isverified: user.Isverified,
-	}
-
-	res := pgarepo.db.Create(&usr)
+	res := pgarepo.db.Create(&user)
 
 	return res.Error
 }

@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/dzemildupljak/auth-service/internal/domain"
+	"github.com/dzemildupljak/auth-service/internal/core/domain"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -23,10 +23,10 @@ func DbConnection() *gorm.DB {
 	dbLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
 		logger.Config{
-			SlowThreshold:             time.Second, // Slow SQL threshold
-			LogLevel:                  logger.Info, // Log level
-			IgnoreRecordNotFoundError: true,        // Ignore ErrRecordNotFound error for logger
-			Colorful:                  true,        // Disable color
+			SlowThreshold:             time.Second,  // Slow SQL threshold
+			LogLevel:                  logger.Error, // Log level
+			IgnoreRecordNotFoundError: true,         // Ignore ErrRecordNotFound error for logger
+			Colorful:                  true,         // Disable color
 		},
 	)
 
@@ -51,7 +51,7 @@ func CloseDbConnection(db *gorm.DB) {
 }
 func ExecMigrations(db *gorm.DB) {
 
-	err := db.AutoMigrate(&domain.TbUser{})
+	err := db.AutoMigrate(&domain.User{})
 
 	if err != nil {
 		fmt.Println("Error migrating")
