@@ -19,11 +19,11 @@ func authErrorResponse() (types.SigninTokens, error) {
 }
 
 type AuthService struct {
-	pgrepo  ports.AuthRepository
+	pgrepo  ports.AuthPersistenceRepository
 	jwtrepo ports.JwtRepository
 }
 
-func NewAuthService(authrepo ports.AuthRepository, jwtrepo ports.JwtRepository) *AuthService {
+func NewAuthService(authrepo ports.AuthPersistenceRepository, jwtrepo ports.JwtRepository) *AuthService {
 	return &AuthService{
 		pgrepo:  authrepo,
 		jwtrepo: jwtrepo,

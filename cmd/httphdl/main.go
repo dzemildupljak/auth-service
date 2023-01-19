@@ -1,13 +1,14 @@
-package httphdl
+package cmd
 
 // import (
 // 	"fmt"
 // 	"net/http"
+// 	"os"
 
+// 	authservice "github.com/dzemildupljak/auth-service/internal/core/services/auth-service"
 // 	"github.com/dzemildupljak/auth-service/internal/handlers"
 // 	"github.com/dzemildupljak/auth-service/internal/pgdb"
-// 	"github.com/dzemildupljak/auth-service/internal/repositories/authrepo"
-// 	authservice "github.com/dzemildupljak/auth-service/internal/services/auth-service"
+// 	"github.com/dzemildupljak/auth-service/internal/repositories"
 // 	"github.com/dzemildupljak/auth-service/internal/utils"
 // 	"github.com/gorilla/mux"
 // )
@@ -18,14 +19,23 @@ package httphdl
 // 	utils.Load()
 
 // 	dbConn := pgdb.DbConnection()
+// 	defer pgdb.CloseDbConnection(dbConn)
 
-// 	authrepo := authrepo.NewPgAuthRepo(*dbConn)
-// 	authsrv := authservice.NewAuthService(authrepo)
-// 	authhdl := handlers.NewAuthHttpHandler(*authsrv)
+// 	// pgdb.ExecMigrations(dbConn)
+
+// 	authpgrepo := repositories.NewPgAuthRepo(dbConn)
+// 	jwtrepo := repositories.NewJwtAuthRepo()
+// 	authsrv := authservice.NewAuthService(authpgrepo, jwtrepo)
+// 	authhdl := handlers.NewAuthHttpHandler(authsrv)
 
 // 	r := mux.NewRouter()
 
+// 	r.Use(utils.ReqLoggerMiddleware())
+
 // 	handlers.AuthRoute(r, *authhdl)
 
-// 	http.ListenAndServe(":8004", r)
+// 	appport := os.Getenv("APP_PORT")
+
+// 	fmt.Println("ListenAndServe on port :" + appport)
+// 	http.ListenAndServe(":"+appport, r)
 // }

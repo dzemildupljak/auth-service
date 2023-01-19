@@ -136,6 +136,4 @@ func extractToken(r *http.Request) (string, error) {
 func tokenErrorResponse(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusUnauthorized)
 	json.NewEncoder(w).Encode("authentication failed. token not provided or malformed")
-	return
-
 }

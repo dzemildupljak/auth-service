@@ -2,10 +2,25 @@ version: "3.8"
 
 services:
   # -----------------------
-  # auth service db
+  # auth service pgdb
   # -----------------------
-  service-auth-db:
+  serviceauthmngdb:
+    image: mongo
+    container_name: service-auth-mngdb
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - '6000:27017'
+    volumes:
+      - service_auth_mng:/data/db
+
+  # -----------------------
+  # auth service pgdb
+  # -----------------------
+  serviceauthpgdb:
     image: postgres
+    container_name: service-auth-pgdb
     environment:
       - POSTGRES_USER=${POSTGRES_USER_AUTH}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD_AUTH}
@@ -26,7 +41,8 @@ services:
       context: .
       dockerfile: Dockerfile
     depends_on:
-      - service-auth-db
+      - serviceauthpgdb
+      - serviceauthmngdb
     volumes:
       - ./:/app
     ports:
@@ -34,3 +50,4 @@ services:
 
 volumes:
   service_auth_data:
+  service_auth_mng:

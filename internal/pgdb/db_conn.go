@@ -39,7 +39,7 @@ func DbConnection() *gorm.DB {
 		return nil
 	}
 
-	fmt.Println("Connection succeed")
+	fmt.Println("Postgres successfully connected...")
 
 	return dbconn
 }
