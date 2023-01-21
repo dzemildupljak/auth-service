@@ -1,17 +1,24 @@
 package domain
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type User struct {
-	gorm.Model
-	Id         int64  `json:"id"`
-	Name       string `json:"name" gorm:"not null"`
-	Username   string `json:"username" gorm:"not null"`
-	Email      string `json:"email" validate:"required" gorm:"unique;not null;index"`
-	Password   string `json:"-" validate:"required" gorm:"not null"`
-	Address    string `json:"address"`
-	Isverified bool   `json:"isverified" gorm:"default:false"`
-	Tokenhash  []byte `json:"tokenhash" gorm:"not null"`
+	// Id uuid.UUID `json:"id" gorm:"primary_key; unique; type:uuid; column:id; default:uuid_generate_v4()" bson:"-"`
+	Id         uuid.UUID `json:"id" gorm:"primary_key; unique; type:uuid; column:id; default:uuid_generate_v4()" bson:"_id,omitempty"`
+	Name       string    `json:"name" gorm:"not null" bson:"name"`
+	Username   string    `json:"username" gorm:"not null" bson:"username,omitempty"`
+	Email      string    `json:"email" validate:"required" gorm:"unique;not null; index" bson:"email,omitempty"`
+	Password   string    `json:"-" validate:"required" gorm:"not null" bson:"password,omitempty"`
+	Address    string    `json:"address" bson:"address"`
+	Isverified bool      `json:"isverified" gorm:"default:false" bson:"isverified"`
+	Tokenhash  []byte    `json:"tokenhash" gorm:"not null" bson:"tokenhash"`
+	CreatedAt  time.Time `json:"-" gorm:"not null" bson:"createdat"`
+	UpdatedAt  time.Time `json:"-" gorm:"not null" bson:"updatedat"`
+	DeletedAt  time.Time `json:"-" gorm:"index; not null" bson:"deletedat"`
 	// Role                 string       `json:"role"`
 	// MailVerifyCode       string       `json:"mail_verify_code"`
 	// MailVerifyExpire     sql.NullTime `json:"mail_verify_expire"`

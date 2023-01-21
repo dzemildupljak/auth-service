@@ -24,7 +24,7 @@ package cmd
 // 	// pgdb.ExecMigrations(dbConn)
 
 // 	authpgrepo := repositories.NewPgAuthRepo(dbConn)
-// 	jwtrepo := repositories.NewJwtAuthRepo()
+// 	jwtrepo := repositories.NewJwtRepo()
 // 	authsrv := authservice.NewAuthService(authpgrepo, jwtrepo)
 // 	authhdl := handlers.NewAuthHttpHandler(authsrv)
 

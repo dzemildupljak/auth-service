@@ -1,14 +1,14 @@
-package authservice
+package service
 
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/dzemildupljak/auth-service/internal/core/domain"
 	"github.com/dzemildupljak/auth-service/internal/core/ports"
 	"github.com/dzemildupljak/auth-service/internal/utils"
 	"github.com/dzemildupljak/auth-service/types"
+	"github.com/google/uuid"
 )
 
 func authErrorResponse() (types.SigninTokens, error) {
@@ -19,27 +19,27 @@ func authErrorResponse() (types.SigninTokens, error) {
 }
 
 type AuthService struct {
-	pgrepo  ports.AuthPersistenceRepository
+	ctx     context.Context
+	prsrepo ports.PersistenceRepository
 	jwtrepo ports.JwtRepository
 }
 
-func NewAuthService(authrepo ports.AuthPersistenceRepository, jwtrepo ports.JwtRepository) *AuthService {
+func NewAuthService(ctx context.Context, persrepo ports.PersistenceRepository, jwtrepo ports.JwtRepository) *AuthService {
 	return &AuthService{
-		pgrepo:  authrepo,
+		ctx:     ctx,
+		prsrepo: persrepo,
 		jwtrepo: jwtrepo,
 	}
 }
 
 func (auth *AuthService) Signin(user domain.UserLogin) (types.SigninTokens, error) {
-	ctx := context.Background()
 
 	// get user by email and check if exists from adapter(e.g db)
-	usr, err := auth.pgrepo.GetUserByMail(ctx, user.Email)
+	usr, err := auth.prsrepo.GetUserByMail(user.Email)
+
 	if err != nil {
 		return types.SigninTokens{}, err
 	}
-
-	fmt.Println("fmt.Println(usr)\n\n", usr)
 
 	// compare passwords
 	correctpwd := utils.ComparePasswords(usr.Password, user.Password)
@@ -62,10 +62,10 @@ func (auth *AuthService) Signin(user domain.UserLogin) (types.SigninTokens, erro
 }
 
 func (auth *AuthService) Signup(user domain.SignupUserParams) error {
-	ctx := context.Background()
-	tkhs := utils.GenerateRandomString(256)
+	tkhs := utils.GenerateRandomString(64)
 
 	usr := domain.User{
+		Id:         uuid.New(),
 		Email:      user.Email,
 		Password:   utils.HashAndSalt(user.Password),
 		Username:   user.Username,
@@ -75,31 +75,37 @@ func (auth *AuthService) Signup(user domain.SignupUserParams) error {
 		Tokenhash:  []byte(tkhs),
 	}
 
-	err := auth.pgrepo.CreateRegisterUser(ctx, usr)
+	err := auth.prsrepo.CreateRegisterUser(usr)
 	if err != nil {
+		utils.ErrorLogger.Println(err)
 		return err
 	}
 	return nil
 }
 
 func (auth *AuthService) AuthorizeAccess(acctoken string) error {
-	return auth.jwtrepo.ValidateAccessToken(acctoken)
+	_, err := auth.jwtrepo.ValidateAccessToken(acctoken)
+	return err
 }
 
-func (auth *AuthService) ResetAccesToken(reftoken string) (types.SigninTokens, error) {
+func (auth *AuthService) ResetTokens(reftoken string) (types.SigninTokens, error) {
 	usrid, err := auth.jwtrepo.ValidateRefreshToken(reftoken)
 	if err != nil {
 		return authErrorResponse()
 	}
 
-	newtoken, err := auth.jwtrepo.GenerateAccessToken(usrid)
+	newacctoken, err := auth.jwtrepo.GenerateAccessToken(usrid)
+	if err != nil {
+		return authErrorResponse()
+	}
+	newreftoken, err := auth.jwtrepo.GenerateRefreshToken(usrid)
 	if err != nil {
 		return authErrorResponse()
 	}
 
 	tknresp := types.SigninTokens{
-		Access_token:  newtoken,
-		Refresh_token: "",
+		Access_token:  newacctoken,
+		Refresh_token: newreftoken,
 	}
 
 	return tknresp, nil

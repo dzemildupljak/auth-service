@@ -1,9 +1,8 @@
-package handlers
+package httphdl
 
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -39,7 +38,6 @@ func (handler *AuthHttpHandler) Signin(w http.ResponseWriter, r *http.Request) {
 	err = validator.Validate(usr)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
-		fmt.Println(err)
 		json.NewEncoder(w).Encode("validating error")
 		return
 	}
@@ -112,7 +110,7 @@ func (handler *AuthHttpHandler) RefreshToken(w http.ResponseWriter, r *http.Requ
 		json.NewEncoder(w).Encode("authentication error")
 		return
 	}
-	tkns, err := handler.service.ResetAccesToken(token)
+	tkns, err := handler.service.ResetTokens(token)
 	if err != nil {
 		tokenErrorResponse(w)
 		return

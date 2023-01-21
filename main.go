@@ -6,10 +6,12 @@ import (
 	"net/http"
 	"os"
 
-	authservice "github.com/dzemildupljak/auth-service/internal/core/services/auth-service"
-	"github.com/dzemildupljak/auth-service/internal/handlers"
-	"github.com/dzemildupljak/auth-service/internal/mngdb"
+	service "github.com/dzemildupljak/auth-service/internal/core/services"
+	"github.com/dzemildupljak/auth-service/internal/db/mngdb"
+	"github.com/dzemildupljak/auth-service/internal/handlers/httphdl"
 	"github.com/dzemildupljak/auth-service/internal/repositories"
+	"github.com/dzemildupljak/auth-service/internal/repositories/persistence"
+
 	"github.com/dzemildupljak/auth-service/internal/utils"
 	"github.com/gorilla/mux"
 )
@@ -20,32 +22,41 @@ import (
 
 func main() {
 	fmt.Println("Hello from auth service!!!")
+	ctx := context.Background()
 
 	utils.Load()
 
 	// postgres conn and repo
 	// pgdbconn := pgdb.DbConnection()
 	// defer pgdb.CloseDbConnection(pgdbconn)
-	// pgrepo := repositories.NewPgRepo(pgdbconn)
-	// pgdb.ExecMigrations(dbConn)
+	// persistencerepo := persistence.NewPgRepo(ctx, pgdbconn)
+	// pgdb.ExecMigrations(pgdbconn)
 
 	// mongo conn and repo
-	ctx := context.Background()
+	dbname := os.Getenv("POSTGRES_DB_AUTH")
 	mngdbconn := mngdb.DbConnection(ctx)
-	mngrepo := repositories.NewMngRepo(mngdbconn)
+	mngDB := mngdbconn.Database(dbname)
+	mngdb.ExecMigrations(ctx, mngDB)
+	defer mngdb.DbDisonnection(ctx, mngdbconn)
+	persistencerepo := persistence.NewMngRepo(ctx, mngDB)
 
 	// jwt repo
-	jwtrepo := repositories.NewJwtAuthRepo()
+	jwtrepo := repositories.NewJwtRepo()
 
-	authsrv := authservice.NewAuthService(mngrepo, jwtrepo)
+	authsrv := service.NewAuthService(ctx, persistencerepo, jwtrepo)
 	// authsrv := authservice.NewAuthService(pgrepo, jwtrepo)
-	authhdl := handlers.NewAuthHttpHandler(authsrv)
+
+	authhdl := httphdl.NewAuthHttpHandler(authsrv)
+
+	usersrv := service.NewUserService(ctx, persistencerepo)
+	usrhdl := httphdl.NewUserHttpHandler(usersrv)
 
 	r := mux.NewRouter()
 
 	r.Use(utils.ReqLoggerMiddleware())
 
-	handlers.AuthRoute(r, *authhdl)
+	httphdl.AuthRoute(r, *authhdl)
+	httphdl.UserRoute(r, *usrhdl)
 
 	appport := os.Getenv("APP_PORT")
 

@@ -5,22 +5,21 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/dzemildupljak/auth-service/internal/utils"
 	"github.com/golang-jwt/jwt"
+	"github.com/google/uuid"
 )
 
-// AccessTokenCustomClaims specifies the claims for access token
 type AccessTokenCustomClaims struct {
-	UserID   string
+	UserId   string
 	UserRole string
 	KeyType  string
 	jwt.StandardClaims
 }
 type RefreshTokenCustomClaims struct {
-	UserID    string
+	UserId    string
 	CustomKey string
 	KeyType   string
 	jwt.StandardClaims
@@ -37,18 +36,18 @@ type JwtConfigurations struct {
 	PassResetTemplateID        string
 }
 
-type JwtAuthRepo struct {
+type JwtRepo struct {
 	config JwtConfigurations
 }
 
-func NewJwtAuthRepo() *JwtAuthRepo {
+func NewJwtRepo() *JwtRepo {
 	curDir, err := os.Getwd()
 
 	if err != nil {
 		log.Println(err)
 	}
 
-	return &JwtAuthRepo{
+	return &JwtRepo{
 		config: JwtConfigurations{
 			AccessTokenPrivateKeyPath:  curDir + "/access-private.pem",
 			AccessTokenPublicKeyPath:   curDir + "/access-public.pem",
@@ -60,8 +59,9 @@ func NewJwtAuthRepo() *JwtAuthRepo {
 	}
 }
 
-func (jwtrepo *JwtAuthRepo) GenerateAccessToken(usrId int64) (string, error) {
-	userID := strconv.FormatInt(usrId, 10)
+func (jwtrepo *JwtRepo) GenerateAccessToken(usrId uuid.UUID) (string, error) {
+	userID := uuid.UUID.String(usrId)
+
 	tokenType := "access"
 	userRole := "user"
 
@@ -99,7 +99,7 @@ func (jwtrepo *JwtAuthRepo) GenerateAccessToken(usrId int64) (string, error) {
 	return token.SignedString(signKey)
 }
 
-func (jwtrepo *JwtAuthRepo) ValidateAccessToken(acctoken string) error {
+func (jwtrepo *JwtRepo) ValidateAccessToken(acctoken string) (uuid.UUID, error) {
 	token, err := jwt.ParseWithClaims(
 		acctoken,
 		&AccessTokenCustomClaims{},
@@ -129,20 +129,25 @@ func (jwtrepo *JwtAuthRepo) ValidateAccessToken(acctoken string) error {
 	if err != nil {
 		utils.ErrorLogger.Println("Unable to parse claims", "error", err)
 		fmt.Println("Unable to parse claims", "error", err)
-		return err
+		return uuid.Nil, err
 	}
 
 	claims, ok := token.Claims.(*AccessTokenCustomClaims)
 
-	if !ok || !token.Valid || claims.UserID == "" || claims.KeyType != "access" {
-		return errors.New("invalid token: authentication failed")
+	if !ok || !token.Valid || claims.UserId == "" || claims.KeyType != "access" {
+		return uuid.Nil, errors.New("invalid token: authentication failed")
+	}
+	usrid, err := uuid.Parse(claims.UserId)
+	if err != nil {
+		return uuid.Nil, errors.New("invalid token: authentication failed")
 	}
 
-	return nil
+	return usrid, nil
+
 }
 
-func (jwtrepo *JwtAuthRepo) GenerateRefreshToken(userId int64) (string, error) {
-	usrId := strconv.FormatInt(userId, 10)
+func (jwtrepo *JwtRepo) GenerateRefreshToken(userId uuid.UUID) (string, error) {
+	usrId := uuid.UUID.String(userId)
 	cusKey := utils.GenerateCustomKey(usrId, "asdadsads")
 	tokenType := "refresh"
 
@@ -177,9 +182,10 @@ func (jwtrepo *JwtAuthRepo) GenerateRefreshToken(userId int64) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 
 	return token.SignedString(signKey)
+
 }
 
-func (jwtrepo *JwtAuthRepo) ValidateRefreshToken(reftoken string) (int64, error) {
+func (jwtrepo *JwtRepo) ValidateRefreshToken(reftoken string) (uuid.UUID, error) {
 
 	token, err := jwt.ParseWithClaims(
 		reftoken,
@@ -210,16 +216,16 @@ func (jwtrepo *JwtAuthRepo) ValidateRefreshToken(reftoken string) (int64, error)
 	if err != nil {
 		utils.ErrorLogger.Println("unable to parse claims", "error", err)
 		fmt.Println("unable to parse claims", "error", err)
-		return 0, err
+		return uuid.Nil, err
 	}
 
 	claims, ok := token.Claims.(*RefreshTokenCustomClaims)
-	usrId, err := strconv.ParseInt(claims.UserID, 10, 64)
+	usrId, err := uuid.Parse(claims.UserId)
 
-	if !ok || !token.Valid || claims.UserID == "" || claims.KeyType != "refresh" || err != nil {
+	if !ok || !token.Valid || claims.UserId == "" || claims.KeyType != "refresh" || err != nil {
 		utils.ErrorLogger.Println("could not extract claims from token")
 		fmt.Println("could not extract claims from token")
-		return 0, errors.New("invalid token: authentication failed")
+		return uuid.Nil, errors.New("invalid token: authentication failed")
 	}
 
 	return usrId, nil

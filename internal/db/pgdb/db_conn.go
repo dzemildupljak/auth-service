@@ -50,12 +50,13 @@ func CloseDbConnection(db *gorm.DB) {
 	sqlDB.Close()
 }
 func ExecMigrations(db *gorm.DB) {
+	db.Exec(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`)
 
 	err := db.AutoMigrate(&domain.User{})
 
 	if err != nil {
-		fmt.Println("Error migrating")
+		fmt.Println("Error migrating postgres")
 	} else {
-		fmt.Println("Successful migrating")
+		fmt.Println("Successful migrating postgres")
 	}
 }
