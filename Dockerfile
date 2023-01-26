@@ -14,5 +14,5 @@ RUN go build -o auth-service main.go
 EXPOSE 8004
 
 
-CMD [ "./auth-service" ]
+# CMD [ "./auth-service" ]
 # CMD reflex -r '\.go$$' -s go run *.go
