@@ -29,7 +29,7 @@ func DbConnection() *gorm.DB {
 
 	fmt.Println(dsn)
 
-	// dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=5434 sslmode=disable", "localhost", "root", "postgres", "auth_service_db")
+	// dsn = fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=5434 sslmode=disable", "localhost", "root", "postgres", "auth_service_db")
 
 	dbLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer

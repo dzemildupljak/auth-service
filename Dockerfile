@@ -9,7 +9,7 @@ RUN go mod download
 
 # Install Reflex for development
 # RUN go install github.com/cespare/reflex@latest
-RUN go build main.go .
+RUN go build -o auth-service main.go
 
 EXPOSE 8004
 
