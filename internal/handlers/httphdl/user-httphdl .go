@@ -19,6 +19,20 @@ func NewUserHttpHandler(srv ports.UserService) *UserHttpHandler {
 	}
 }
 
+func (handler *UserHttpHandler) ListUser(w http.ResponseWriter, r *http.Request) {
+	usrs, err := handler.service.GetAllUsers()
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode("retrieve failed")
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(ResponsePayload{
+		Payload: usrs,
+	})
+}
+
 func (handler *UserHttpHandler) DeleteUserById(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	usrid, err := uuid.Parse(params["user_id"])

@@ -2,11 +2,13 @@ package persistence
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/dzemildupljak/auth-service/internal/core/domain"
 	"github.com/dzemildupljak/auth-service/internal/utils"
 	"github.com/google/uuid"
+	"gopkg.in/validator.v2"
 	"gorm.io/gorm"
 )
 
@@ -23,13 +25,24 @@ func NewPgRepo(ctx context.Context, dbConn *gorm.DB) *PgRepo {
 }
 
 func (pgrepo *PgRepo) GetListusers() ([]domain.User, error) {
-	return make([]domain.User, 1), nil
+	usrs := []domain.User{}
+
+	err := pgrepo.db.WithContext(pgrepo.ctx).Table("users").Find(&usrs)
+
+	if err != nil {
+		fmt.Println(err)
+		utils.ErrorLogger.Println(err)
+	}
+
+	return usrs, nil
 }
 
 func (pgrepo *PgRepo) GetUserById(id uuid.UUID) (domain.User, error) {
 	usr := domain.User{}
+
 	err := pgrepo.db.WithContext(pgrepo.ctx).Table("users").Where("Id = ?", id).First(&usr).Error
 	if err != nil {
+		fmt.Println(err)
 		utils.ErrorLogger.Println(err)
 	}
 
@@ -39,27 +52,45 @@ func (pgrepo *PgRepo) GetUserById(id uuid.UUID) (domain.User, error) {
 func (pgrepo *PgRepo) GetUserByMail(mail string) (domain.User, error) {
 	usr := domain.User{}
 	usrQuery := domain.User{Email: mail}
-	res := pgrepo.db.WithContext(pgrepo.ctx).First(&usr, usrQuery)
 
-	if res.Error != nil {
-		utils.ErrorLogger.Println(res.Error)
+	err := pgrepo.db.WithContext(pgrepo.ctx).First(&usr, usrQuery).Error
+	if err != nil {
+		fmt.Println(err)
+		utils.ErrorLogger.Println(err)
 	}
 
-	return usr, res.Error
+	return usr, err
 }
 
 func (pgrepo *PgRepo) CreateRegisterUser(usr domain.User) error {
-	usr.CreatedAt = time.Now()
-	usr.UpdatedAt = time.Now()
-	res := pgrepo.db.WithContext(pgrepo.ctx).Create(&usr)
-
-	if res.Error != nil {
-		utils.ErrorLogger.Println(res.Error)
+	err := validator.Validate(usr)
+	if err != nil {
+		fmt.Println("persistance:", err)
+		utils.ErrorLogger.Println("persistance:", err)
 	}
 
-	return res.Error
+	usr.CreatedAt = time.Now()
+	usr.UpdatedAt = time.Now()
+	err = pgrepo.db.WithContext(pgrepo.ctx).Create(&usr).Error
+
+	if err != nil {
+		fmt.Println(err)
+		utils.ErrorLogger.Println(err)
+	}
+
+	return err
 }
 
 func (pgrepo *PgRepo) DeleteUserById(id uuid.UUID) error {
-	return nil
+
+	u := domain.User{}
+
+	err := pgrepo.db.WithContext(pgrepo.ctx).Table("users").Where("Id = ?", id).Delete(&u).Error
+
+	if err != nil {
+		fmt.Println(err)
+		utils.ErrorLogger.Println(err)
+	}
+
+	return err
 }

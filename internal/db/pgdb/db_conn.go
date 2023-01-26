@@ -13,12 +13,23 @@ import (
 )
 
 func DbConnection() *gorm.DB {
-	pguserauth := os.Getenv("POSTGRES_USER_AUTH")
-	pgpassauth := os.Getenv("POSTGRES_PASSWORD_AUTH")
-	pgdbauth := os.Getenv("POSTGRES_DB_AUTH")
-	pgdbhost := os.Getenv("POSTGRES_DB_HOST")
+	var dsn string
+	serverconn := os.Getenv("INTERNAL_DATABASE_URL_RENDER")
 
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=5432 sslmode=disable", pgdbhost, pguserauth, pgpassauth, pgdbauth)
+	if serverconn == "" {
+		pguserauth := os.Getenv("POSTGRES_USER_AUTH")
+		pgpassauth := os.Getenv("POSTGRES_PASSWORD_AUTH")
+		pgdbauth := os.Getenv("POSTGRES_DB_AUTH")
+		pgdbhost := os.Getenv("POSTGRES_DB_HOST")
+
+		dsn = fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=5432 sslmode=disable", pgdbhost, pguserauth, pgpassauth, pgdbauth)
+	} else {
+		dsn = serverconn
+	}
+
+	fmt.Println(dsn)
+
+	// dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=5434 sslmode=disable", "localhost", "root", "postgres", "auth_service_db")
 
 	dbLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
@@ -36,6 +47,7 @@ func DbConnection() *gorm.DB {
 
 	if err != nil {
 		fmt.Println("Connection failed")
+		log.Panic(err)
 		return nil
 	}
 

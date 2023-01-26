@@ -73,6 +73,7 @@ func (auth *AuthService) Signup(user domain.SignupUserParams) error {
 		Name:       user.Name,
 		Isverified: false,
 		Tokenhash:  []byte(tkhs),
+		// Role:       "user",
 	}
 
 	err := auth.prsrepo.CreateRegisterUser(usr)

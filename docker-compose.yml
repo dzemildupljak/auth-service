@@ -13,7 +13,7 @@ services:
     ports:
       - '6000:27017'
     volumes:
-      - service_auth_mng:/data/db
+      - auth_service_mngvol:/data/db
 
   # -----------------------
   # auth service pgdb
@@ -28,7 +28,7 @@ services:
     ports:
       - "5434:5432"
     volumes:
-      - service_auth_data:/var/lib/postgresql/data
+      - auth_service_pgvol:/var/lib/postgresql/data
   # -----------------------
   # auth service
   # -----------------------
@@ -39,7 +39,7 @@ services:
     image: auth-app-img-dev
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     depends_on:
       - serviceauthpgdb
       - serviceauthmngdb
@@ -49,5 +49,7 @@ services:
       - 4004:8004
 
 volumes:
-  service_auth_data:
-  service_auth_mng:
+  auth_service_pgvol:
+    name: auth_service_pgvol
+  auth_service_mngvol:
+    name: auth_service_mngvol

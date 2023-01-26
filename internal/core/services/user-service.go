@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	"github.com/dzemildupljak/auth-service/internal/core/domain"
 	"github.com/dzemildupljak/auth-service/internal/core/ports"
 	"github.com/google/uuid"
 )
@@ -21,4 +22,8 @@ func NewUserService(ctx context.Context, authrepo ports.PersistenceRepository) *
 
 func (user *UserService) DeleteUserById(usrId uuid.UUID) error {
 	return user.prsrepo.DeleteUserById(usrId)
+}
+
+func (user *UserService) GetAllUsers() ([]domain.User, error) {
+	return user.prsrepo.GetListusers()
 }

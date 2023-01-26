@@ -1,1 +1,9 @@
-b81472ee-c1c7-461f-a3ee-dcd30fa22834
+- start nginx config more detailed
+- start email service
+- start flow auth0 for google
+
+
+
+
+Key pair EC2 
+name: risc_auth_service_key
