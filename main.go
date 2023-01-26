@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -13,6 +14,7 @@ import (
 	"github.com/dzemildupljak/auth-service/internal/repositories/persistence"
 
 	"github.com/dzemildupljak/auth-service/internal/utils"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -53,6 +55,13 @@ func main() {
 
 	r := mux.NewRouter()
 
+	r.HandleFunc("/healthcheck", func(w http.ResponseWriter, r *http.Request) {
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode("jwt authentication succeed")
+	})
+
 	r.Use(utils.ReqLoggerMiddleware())
 
 	httphdl.AuthRoute(r, *authhdl)
@@ -60,6 +69,11 @@ func main() {
 
 	appport := os.Getenv("APP_PORT")
 
+	headers := handlers.AllowedHeaders([]string{"*"})
+	methods := handlers.AllowedMethods([]string{"*"})
+	// methods := handlers.AllowedMethods([]string{"GET", "POST", "OPTIONS", "DELETE", "PUT"})
+	origins := handlers.AllowedOrigins([]string{"*"})
+
 	fmt.Println("ListenAndServe on port :" + appport)
-	http.ListenAndServe(":"+appport, r)
+	http.ListenAndServe(":"+appport, handlers.CORS(headers, methods, origins)(r))
 }
