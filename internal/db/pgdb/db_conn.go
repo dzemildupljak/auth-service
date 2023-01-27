@@ -19,10 +19,10 @@ func DbConnection() *gorm.DB {
 	if serverconn != "" {
 		dsn = serverconn
 	} else {
-		pguserauth := os.Getenv("POSTGRES_USER_AUTH")
-		pgpassauth := os.Getenv("POSTGRES_PASSWORD_AUTH")
-		pgdbauth := os.Getenv("POSTGRES_DB_AUTH")
-		pgdbhost := os.Getenv("POSTGRES_DB_HOST")
+		pguserauth := os.Getenv("POSTGRES_USER")
+		pgpassauth := os.Getenv("POSTGRES_PASSWORD")
+		pgdbauth := os.Getenv("POSTGRES_DB")
+		pgdbhost := os.Getenv("POSTGRES_HOST")
 
 		dsn = fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=5432 sslmode=disable", pgdbhost, pguserauth, pgpassauth, pgdbauth)
 

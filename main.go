@@ -35,18 +35,17 @@ func main() {
 	pgdb.ExecMigrations(pgdbconn)
 
 	// mongo conn and repo
-	// dbname := os.Getenv("POSTGRES_DB_AUTH")
+	// dbname := os.Getenv("MONGO_INITDB")
 	// mngdbconn := mngdb.DbConnection(ctx)
 	// mngDB := mngdbconn.Database(dbname)
-	// mngdb.ExecMigrations(ctx, mngDB)
 	// defer mngdb.DbDisonnection(ctx, mngdbconn)
+	// mngdb.ExecMigrations(ctx, mngDB)
 	// persistencerepo := persistence.NewMngRepo(ctx, mngDB)
 
 	// jwt repo
 	jwtrepo := repositories.NewJwtRepo()
 
 	authsrv := service.NewAuthService(ctx, persistencerepo, jwtrepo)
-	// authsrv := authservice.NewAuthService(pgrepo, jwtrepo)
 
 	authhdl := httphdl.NewAuthHttpHandler(authsrv)
 
@@ -71,9 +70,9 @@ func main() {
 
 	headers := handlers.AllowedHeaders([]string{"*"})
 	methods := handlers.AllowedMethods([]string{"*"})
-	// methods := handlers.AllowedMethods([]string{"GET", "POST", "OPTIONS", "DELETE", "PUT"})
 	origins := handlers.AllowedOrigins([]string{"*"})
+	ttl := handlers.MaxAge(3600)
 
 	fmt.Println("ListenAndServe on port :" + appport)
-	http.ListenAndServe(":"+appport, handlers.CORS(headers, methods, origins)(r))
+	http.ListenAndServe(":"+appport, handlers.CORS(headers, methods, origins, ttl)(r))
 }

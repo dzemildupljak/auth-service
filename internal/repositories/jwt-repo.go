@@ -157,7 +157,7 @@ func (jwtrepo *JwtRepo) GenerateRefreshToken(userId uuid.UUID) (string, error) {
 		tokenType,
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(
-				24 * time.Hour * time.Duration(jwtrepo.config.JwtRefreshExpiration),
+				24 * time.Duration(jwtrepo.config.JwtRefreshExpiration),
 			).Unix(),
 			Issuer: "risc_app.auth.service",
 		},
