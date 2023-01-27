@@ -69,11 +69,11 @@ func main() {
 
 	appport := os.Getenv("APP_PORT")
 
-	headers := handlers.AllowedHeaders([]string{"*"})
-	// headers := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
+	// headers := handlers.AllowedHeaders([]string{"*"})
+	headers := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
 	// methods := handlers.AllowedMethods([]string{"*"})
 	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"})
-	origins := handlers.AllowedOrigins([]string{"*"})
+	origins := handlers.AllowedOrigins([]string{"http://localhost:3000/"})
 	ttl := handlers.MaxAge(3600)
 	// handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}), handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}), handlers.AllowedOrigins([]string{"*"})
 
