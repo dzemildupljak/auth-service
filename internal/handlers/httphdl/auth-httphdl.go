@@ -95,7 +95,7 @@ func (handler *AuthHttpHandler) AuthorizeAccess(w http.ResponseWriter, r *http.R
 
 	err = handler.service.AuthorizeAccess(token)
 	if err != nil {
-		tokenErrorResponse(w)
+		TokenErrorResponse(w)
 		return
 	}
 
@@ -112,7 +112,7 @@ func (handler *AuthHttpHandler) RefreshToken(w http.ResponseWriter, r *http.Requ
 	}
 	tkns, err := handler.service.ResetTokens(token)
 	if err != nil {
-		tokenErrorResponse(w)
+		TokenErrorResponse(w)
 		return
 	}
 
@@ -131,7 +131,8 @@ func extractToken(r *http.Request) (string, error) {
 	return authHeaderContent[1], nil
 }
 
-func tokenErrorResponse(w http.ResponseWriter) {
+func TokenErrorResponse(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusUnauthorized)
 	json.NewEncoder(w).Encode("authentication failed. token not provided or malformed")
 }
