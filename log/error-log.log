@@ -1,0 +1,24 @@
+Error Logger:	2023/01/27 00:18:15.527387 pg-repo.go:69: persistance: Role: zero value
+Error Logger:	2023/01/27 00:18:15.528907 pg-repo.go:78: ERROR: duplicate key value violates unique constraint "users_email_key" (SQLSTATE 23505)
+Error Logger:	2023/01/27 00:18:15.528933 auth-service.go:81: ERROR: duplicate key value violates unique constraint "users_email_key" (SQLSTATE 23505)
+Error Logger:	2023/01/27 00:18:20.106468 pg-repo.go:69: persistance: Role: zero value
+Error Logger:	2023/01/27 00:18:20.108178 pg-repo.go:78: ERROR: duplicate key value violates unique constraint "users_email_key" (SQLSTATE 23505)
+Error Logger:	2023/01/27 00:18:20.108206 auth-service.go:81: ERROR: duplicate key value violates unique constraint "users_email_key" (SQLSTATE 23505)
+Error Logger:	2023/01/27 00:18:55.943273 pg-repo.go:69: persistance: Role: zero value
+Error Logger:	2023/01/27 14:21:01.021652 mng-repo.go:46: mongo: no documents in result
+Error Logger:	2023/01/27 14:21:01.822531 mng-repo.go:46: mongo: no documents in result
+Error Logger:	2023/01/28 12:43:44.857328 pg-repo.go:69: persistance: Role: zero value
+Error Logger:	2023/01/28 12:43:44.864343 pg-repo.go:78: ERROR: duplicate key value violates unique constraint "users_email_key" (SQLSTATE 23505)
+Error Logger:	2023/01/28 12:43:44.864372 auth-service.go:81: ERROR: duplicate key value violates unique constraint "users_email_key" (SQLSTATE 23505)
+Error Logger:	2023/01/28 13:05:08.268866 mng-repo.go:49: the Database field must be set on Operation
+Error Logger:	2023/01/28 13:05:09.093538 mng-repo.go:49: the Database field must be set on Operation
+Error Logger:	2023/01/28 13:05:09.869461 mng-repo.go:49: the Database field must be set on Operation
+Error Logger:	2023/01/28 13:05:10.692934 mng-repo.go:49: the Database field must be set on Operation
+Error Logger:	2023/01/28 13:05:26.060834 mng-repo.go:69: the Database field must be set on Operation
+Error Logger:	2023/01/28 13:05:26.060856 auth-service.go:81: the Database field must be set on Operation
+Error Logger:	2023/01/28 13:05:29.605263 mng-repo.go:49: the Database field must be set on Operation
+Error Logger:	2023/01/28 13:05:30.718379 mng-repo.go:49: the Database field must be set on Operation
+Error Logger:	2023/01/28 21:45:26.315267 pg-repo.go:34: &{0xc0001182d0 <nil> 1 0xc0001601c0 0}
+Error Logger:	2023/01/28 21:45:27.347358 pg-repo.go:34: &{0xc000118870 <nil> 1 0xc000160540 0}
+Error Logger:	2023/01/28 21:45:28.047677 pg-repo.go:34: &{0xc000118bd0 <nil> 1 0xc0001608c0 0}
+Error Logger:	2023/01/28 21:45:33.874470 pg-repo.go:34: &{0xc0003345a0 <nil> 1 0xc0003701c0 0}
