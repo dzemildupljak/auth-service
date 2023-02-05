@@ -3,6 +3,7 @@ package repositories
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -11,15 +12,50 @@ import (
 	"github.com/google/uuid"
 )
 
+type AccessTokenCustomClaims struct {
+	UserId   string
+	UserRole string
+	KeyType  string
+	jwt.StandardClaims
+}
+type RefreshTokenCustomClaims struct {
+	UserId    string
+	CustomKey string
+	KeyType   string
+	jwt.StandardClaims
+}
+
+type JwtConfigurations struct {
+	AccessTokenPrivateKeyPath  string
+	AccessTokenPublicKeyPath   string
+	RefreshTokenPrivateKeyPath string
+	RefreshTokenPublicKeyPath  string
+	JwtExpiration              int
+	JwtRefreshExpiration       int
+	MailVerifTemplateID        string
+	PassResetTemplateID        string
+}
+
 type JwtRepo struct {
-	config utils.JwtConfigurations
+	config JwtConfigurations
 }
 
 func NewJwtRepo() *JwtRepo {
-	conf := utils.NewJwtConfig()
+	curDir, err := os.Getwd()
+
+	if err != nil {
+		log.Println(err)
+	}
 
 	return &JwtRepo{
-		config: conf,
+		config: JwtConfigurations{
+			AccessTokenPrivateKeyPath:  curDir + "/access-private.pem",
+			AccessTokenPublicKeyPath:   curDir + "/access-public.pem",
+			RefreshTokenPrivateKeyPath: curDir + "/refresh-private.pem",
+			RefreshTokenPublicKeyPath:  curDir + "/refresh-public.pem",
+			JwtExpiration:              60,  // seconds
+			JwtRefreshExpiration:       360, // seconds
+		},
 	}
 }
 
@@ -29,11 +65,11 @@ func (jwtrepo *JwtRepo) GenerateAccessToken(usrId uuid.UUID) (string, error) {
 	tokenType := "access"
 	userRole := "user"
 
-	claims := utils.AccessTokenCustomClaims{
-		UserId:   userID,
-		UserRole: userRole,
-		KeyType:  tokenType,
-		StandardClaims: jwt.StandardClaims{
+	claims := AccessTokenCustomClaims{
+		userID,
+		userRole,
+		tokenType,
+		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(
 				time.Second * time.Duration(jwtrepo.config.JwtExpiration),
 			).Unix(),
@@ -68,7 +104,7 @@ func (jwtrepo *JwtRepo) GenerateAccessToken(usrId uuid.UUID) (string, error) {
 func (jwtrepo *JwtRepo) ValidateAccessToken(acctoken string) (uuid.UUID, error) {
 	token, err := jwt.ParseWithClaims(
 		acctoken,
-		&utils.AccessTokenCustomClaims{},
+		&AccessTokenCustomClaims{},
 		func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 				utils.ErrorLogger.Println("Unexpected signing method in auth token")
@@ -98,7 +134,7 @@ func (jwtrepo *JwtRepo) ValidateAccessToken(acctoken string) (uuid.UUID, error) 
 		return uuid.Nil, err
 	}
 
-	claims, ok := token.Claims.(*utils.AccessTokenCustomClaims)
+	claims, ok := token.Claims.(*AccessTokenCustomClaims)
 
 	if !ok || !token.Valid || claims.UserId == "" || claims.KeyType != "access" {
 		return uuid.Nil, errors.New("invalid token: authentication failed")
@@ -109,6 +145,7 @@ func (jwtrepo *JwtRepo) ValidateAccessToken(acctoken string) (uuid.UUID, error) 
 	}
 
 	return usrid, nil
+
 }
 
 func (jwtrepo *JwtRepo) GenerateRefreshToken(userId uuid.UUID) (string, error) {
@@ -116,11 +153,11 @@ func (jwtrepo *JwtRepo) GenerateRefreshToken(userId uuid.UUID) (string, error) {
 	cusKey := utils.GenerateCustomKey(usrId, "asdadsads")
 	tokenType := "refresh"
 
-	claims := utils.RefreshTokenCustomClaims{
-		UserId:    usrId,
-		CustomKey: cusKey,
-		KeyType:   tokenType,
-		StandardClaims: jwt.StandardClaims{
+	claims := RefreshTokenCustomClaims{
+		usrId,
+		cusKey,
+		tokenType,
+		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(
 				24 * time.Duration(jwtrepo.config.JwtRefreshExpiration),
 			).Unix(),
@@ -156,7 +193,7 @@ func (jwtrepo *JwtRepo) ValidateRefreshToken(reftoken string) (uuid.UUID, error)
 
 	token, err := jwt.ParseWithClaims(
 		reftoken,
-		&utils.RefreshTokenCustomClaims{},
+		&RefreshTokenCustomClaims{},
 		func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 				utils.ErrorLogger.Println("unexpected signing method in auth token")
@@ -186,7 +223,7 @@ func (jwtrepo *JwtRepo) ValidateRefreshToken(reftoken string) (uuid.UUID, error)
 		return uuid.Nil, err
 	}
 
-	claims, ok := token.Claims.(*utils.RefreshTokenCustomClaims)
+	claims, ok := token.Claims.(*RefreshTokenCustomClaims)
 	usrId, err := uuid.Parse(claims.UserId)
 
 	if !ok || !token.Valid || claims.UserId == "" || claims.KeyType != "refresh" || err != nil {

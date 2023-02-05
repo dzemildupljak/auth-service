@@ -27,23 +27,7 @@ func NewMngRepo(ctx context.Context, dbConn *mongo.Database) *MngRepo {
 }
 
 func (mngrepo *MngRepo) GetListusers() ([]domain.User, error) {
-	collection := mngrepo.db.Collection("user")
-	var usrs []domain.User
-
-	cursor, err := collection.Find(mngrepo.ctx, bson.D{})
-	if err != nil {
-		utils.ErrorLogger.Println(err)
-		return nil, err
-	}
-
-	err = cursor.All(mngrepo.ctx, &usrs)
-
-	if err != nil {
-		utils.ErrorLogger.Println(err)
-		return nil, err
-	}
-
-	return usrs, nil
+	return []domain.User{}, nil
 }
 
 func (mngrepo *MngRepo) GetUserById(id uuid.UUID) (domain.User, error) {

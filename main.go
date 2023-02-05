@@ -10,14 +10,17 @@ import (
 	service "github.com/dzemildupljak/auth-service/internal/core/services"
 	"github.com/dzemildupljak/auth-service/internal/db/pgdb"
 	"github.com/dzemildupljak/auth-service/internal/handlers/httphdl"
-
+	"github.com/dzemildupljak/auth-service/internal/repositories"
 	"github.com/dzemildupljak/auth-service/internal/repositories/persistence"
-	repositories "github.com/dzemildupljak/auth-service/internal/repositories/token"
 
 	"github.com/dzemildupljak/auth-service/internal/utils"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
+
+// func init() {
+
+// }
 
 func main() {
 	fmt.Println("Hello from auth service!!!")
@@ -25,14 +28,14 @@ func main() {
 
 	utils.Load()
 
-	////////// postgres conn and repo
+	// postgres conn and repo
 	pgdbconn := pgdb.DbConnection()
 	defer pgdb.CloseDbConnection(pgdbconn)
-	pgdb.ExecMigrations(pgdbconn)
 	persistencerepo := persistence.NewPgRepo(ctx, pgdbconn)
+	pgdb.ExecMigrations(pgdbconn)
 
-	////////// mongo conn and repo
-	// dbname := os.Getenv("MONGO_INITDB")
+	// mongo conn and repo
+	// dbname := os.Getenv("POSTGRES_DB_AUTH")
 	// mngdbconn := mngdb.DbConnection(ctx)
 	// mngDB := mngdbconn.Database(dbname)
 	// mngdb.ExecMigrations(ctx, mngDB)
@@ -66,10 +69,13 @@ func main() {
 
 	appport := os.Getenv("APP_PORT")
 
+	// headers := handlers.AllowedHeaders([]string{"*"})
 	headers := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
+	// methods := handlers.AllowedMethods([]string{"*"})
 	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"})
-	origins := handlers.AllowedOrigins([]string{"*"})
+	origins := handlers.AllowedOrigins([]string{"http://localhost:3000/"})
 	ttl := handlers.MaxAge(3600)
+	// handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}), handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}), handlers.AllowedOrigins([]string{"*"})
 
 	fmt.Println("ListenAndServe on port :" + appport)
 	http.ListenAndServe(":"+appport, handlers.CORS(headers, methods, origins, ttl)(r))
