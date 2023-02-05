@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/dzemildupljak/auth-service/internal/core/domain"
 	"github.com/dzemildupljak/auth-service/internal/core/ports"
@@ -21,9 +22,18 @@ func NewUserService(ctx context.Context, authrepo ports.PersistenceRepository) *
 }
 
 func (user *UserService) DeleteUserById(usrId uuid.UUID) error {
-	return user.prsrepo.DeleteUserById(usrId)
+	err := user.prsrepo.DeleteUserById(usrId)
+	if err != nil {
+		fmt.Println("Userservice DeleteUserById falied")
+	}
+	return err
 }
 
 func (user *UserService) GetAllUsers() ([]domain.User, error) {
-	return user.prsrepo.GetListusers()
+	usrs, err := user.prsrepo.GetListusers()
+
+	if err != nil {
+		fmt.Println("Userservice GetListusers falied")
+	}
+	return usrs, err
 }

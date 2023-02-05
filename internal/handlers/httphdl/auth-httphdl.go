@@ -3,6 +3,7 @@ package httphdl
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -24,12 +25,11 @@ func NewAuthHttpHandler(srv ports.AuthService) *AuthHttpHandler {
 }
 
 func (handler *AuthHttpHandler) Signin(w http.ResponseWriter, r *http.Request) {
-	utils.DebugLogger.Println("AuthHttpHandler-Signin start...")
-
 	usr := &domain.UserLogin{}
 
 	err := json.NewDecoder(r.Body).Decode(usr)
 	if err != nil {
+		fmt.Println("httphdl Signin failed")
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode("decoding error")
 		return
@@ -37,6 +37,7 @@ func (handler *AuthHttpHandler) Signin(w http.ResponseWriter, r *http.Request) {
 
 	err = validator.Validate(usr)
 	if err != nil {
+		fmt.Println("httphdl Signin failed")
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode("validating error")
 		return
@@ -44,11 +45,13 @@ func (handler *AuthHttpHandler) Signin(w http.ResponseWriter, r *http.Request) {
 
 	tkns, err := handler.service.Signin(*usr)
 	if err != nil {
+		fmt.Println("httphdl Signin failed")
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode("authentication error")
 		return
 	}
 
+	fmt.Println("httphdl Signin success")
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(tkns)
@@ -61,6 +64,7 @@ func (handler *AuthHttpHandler) Signup(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(usr)
 	if err != nil {
+		fmt.Println("httphdl Signup failed")
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode("decoding error")
 		return
@@ -68,6 +72,7 @@ func (handler *AuthHttpHandler) Signup(w http.ResponseWriter, r *http.Request) {
 
 	err = validator.Validate(usr)
 	if err != nil || usr.Password != usr.RPassword {
+		fmt.Println("httphdl Signup failed")
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode("validating error")
 		return
@@ -76,11 +81,13 @@ func (handler *AuthHttpHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	err = handler.service.Signup(*usr)
 
 	if err != nil {
+		fmt.Println("httphdl Signup failed")
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode("signup error")
 		return
 	}
 
+	fmt.Println("httphdl Signup success")
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 }
@@ -88,6 +95,7 @@ func (handler *AuthHttpHandler) Signup(w http.ResponseWriter, r *http.Request) {
 func (handler *AuthHttpHandler) AuthorizeAccess(w http.ResponseWriter, r *http.Request) {
 	token, err := extractToken(r)
 	if err != nil {
+		fmt.Println("httphdl AuthorizeAccess failed")
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode("authentication error")
 		return
@@ -95,6 +103,7 @@ func (handler *AuthHttpHandler) AuthorizeAccess(w http.ResponseWriter, r *http.R
 
 	err = handler.service.AuthorizeAccess(token)
 	if err != nil {
+		fmt.Println("httphdl AuthorizeAccess failed")
 		TokenErrorResponse(w)
 		return
 	}
@@ -106,16 +115,19 @@ func (handler *AuthHttpHandler) AuthorizeAccess(w http.ResponseWriter, r *http.R
 func (handler *AuthHttpHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	token, err := extractToken(r)
 	if err != nil {
+		fmt.Println("httphdl RefreshToken failed")
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode("authentication error")
 		return
 	}
 	tkns, err := handler.service.ResetTokens(token)
 	if err != nil {
+		fmt.Println("httphdl RefreshToken failed")
 		TokenErrorResponse(w)
 		return
 	}
 
+	fmt.Println("httphdl RefreshToken success")
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(tkns)

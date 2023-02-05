@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/dzemildupljak/auth-service/internal/core/domain"
 	"github.com/dzemildupljak/auth-service/internal/core/ports"
@@ -33,28 +34,27 @@ func NewAuthService(ctx context.Context, persrepo ports.PersistenceRepository, j
 }
 
 func (auth *AuthService) Signin(user domain.UserLogin) (types.SigninTokens, error) {
-
-	// get user by email and check if exists from adapter(e.g db)
 	usr, err := auth.prsrepo.GetUserByMail(user.Email)
 
 	if err != nil {
+		fmt.Println("Authservice GetUserByMail failed")
 		return types.SigninTokens{}, err
 	}
 
-	// compare passwords
 	correctpwd := utils.ComparePasswords(usr.Password, user.Password)
 	if !correctpwd {
+		fmt.Println("Authservice ComparePasswords failed")
 		return authErrorResponse()
 	}
-	// authenticate
 
-	// generate jwt tokens (access, refresh)
 	tknresp := types.SigninTokens{}
 	if tknresp.Access_token, err = auth.jwtrepo.GenerateAccessToken(usr.Id); err != nil {
+		fmt.Println("Authservice GenerateAccessToken failed")
 		return authErrorResponse()
 	}
 
 	if tknresp.Refresh_token, err = auth.jwtrepo.GenerateRefreshToken(usr.Id); err != nil {
+		fmt.Println("Authservice GenerateRefreshToken failed")
 		return authErrorResponse()
 	}
 
@@ -73,11 +73,11 @@ func (auth *AuthService) Signup(user domain.SignupUserParams) error {
 		Name:       user.Name,
 		Isverified: false,
 		Tokenhash:  []byte(tkhs),
-		// Role:       "user",
 	}
 
 	err := auth.prsrepo.CreateRegisterUser(usr)
 	if err != nil {
+		fmt.Println("Authservice CreateRegisterUser failed")
 		utils.ErrorLogger.Println(err)
 		return err
 	}
@@ -85,22 +85,27 @@ func (auth *AuthService) Signup(user domain.SignupUserParams) error {
 }
 
 func (auth *AuthService) AuthorizeAccess(acctoken string) error {
-	_, err := auth.jwtrepo.ValidateAccessToken(acctoken)
+	usrid, err := auth.jwtrepo.ValidateAccessToken(acctoken)
+	fmt.Println("Authservice ValidateAccessToken for user:", usrid)
+
 	return err
 }
 
 func (auth *AuthService) ResetTokens(reftoken string) (types.SigninTokens, error) {
 	usrid, err := auth.jwtrepo.ValidateRefreshToken(reftoken)
 	if err != nil {
+		fmt.Println("Authservice ResetTokens failed for user:", usrid)
 		return authErrorResponse()
 	}
 
 	newacctoken, err := auth.jwtrepo.GenerateAccessToken(usrid)
 	if err != nil {
+		fmt.Println("Authservice GenerateAccessToken failed for user:", usrid)
 		return authErrorResponse()
 	}
 	newreftoken, err := auth.jwtrepo.GenerateRefreshToken(usrid)
 	if err != nil {
+		fmt.Println("Authservice GenerateRefreshToken failed for user:", usrid)
 		return authErrorResponse()
 	}
 

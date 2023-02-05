@@ -11,19 +11,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// type AccessTokenCustomClaims struct {
-// 	UserId   string
-// 	UserRole string
-// 	KeyType  string
-// 	jwt.StandardClaims
-// }
-// type RefreshTokenCustomClaims struct {
-// 	UserId    string
-// 	CustomKey string
-// 	KeyType   string
-// 	jwt.StandardClaims
-// }
-
 type JwtRepo struct {
 	config utils.JwtConfigurations
 }
@@ -50,7 +37,9 @@ func (jwtrepo *JwtRepo) GenerateAccessToken(usrId uuid.UUID) (string, error) {
 			ExpiresAt: time.Now().Add(
 				time.Second * time.Duration(jwtrepo.config.JwtExpiration),
 			).Unix(),
-			Issuer: "risc_app.auth.service",
+			Issuer:    "risc_app.auth.service",
+			IssuedAt:  time.Now().UnixMilli(),
+			NotBefore: time.Now().UnixMilli(),
 		},
 	}
 
@@ -135,7 +124,9 @@ func (jwtrepo *JwtRepo) GenerateRefreshToken(userId uuid.UUID) (string, error) {
 			ExpiresAt: time.Now().Add(
 				24 * time.Duration(jwtrepo.config.JwtRefreshExpiration),
 			).Unix(),
-			Issuer: "risc_app.auth.service",
+			Issuer:    "risc_app.auth.service",
+			IssuedAt:  time.Now().UnixMilli(),
+			NotBefore: time.Now().UnixMilli(),
 		},
 	}
 
