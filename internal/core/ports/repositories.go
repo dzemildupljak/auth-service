@@ -14,8 +14,8 @@ type PersistenceRepository interface {
 }
 
 type JwtRepository interface {
-	GenerateAccessToken(usrId uuid.UUID) (string, error)
+	GenerateAccessToken(usrId uuid.UUID, urole string) (string, error)
 	ValidateAccessToken(acctoken string) (uuid.UUID, error)
-	GenerateRefreshToken(userId uuid.UUID) (string, error)
+	GenerateRefreshToken(userId uuid.UUID, urole string) (string, error)
 	ValidateRefreshToken(reftoken string) (uuid.UUID, error)
 }

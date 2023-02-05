@@ -7,10 +7,10 @@ import (
 )
 
 type AuthService interface {
+	Signup(user domain.SignupUserParams) error
 	Signin(user domain.UserLogin) (types.SigninTokens, error)
 	AuthorizeAccess(acctoken string) error
-	ResetTokens(reftoken string) (types.SigninTokens, error)
-	Signup(user domain.SignupUserParams) error
+	RefreshTokens(reftoken string) (types.SigninTokens, error)
 }
 
 type UserService interface {

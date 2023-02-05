@@ -48,12 +48,12 @@ func (auth *AuthService) Signin(user domain.UserLogin) (types.SigninTokens, erro
 	}
 
 	tknresp := types.SigninTokens{}
-	if tknresp.Access_token, err = auth.jwtrepo.GenerateAccessToken(usr.Id); err != nil {
+	if tknresp.Access_token, err = auth.jwtrepo.GenerateAccessToken(usr.Id, usr.Role); err != nil {
 		fmt.Println("Authservice GenerateAccessToken failed")
 		return authErrorResponse()
 	}
 
-	if tknresp.Refresh_token, err = auth.jwtrepo.GenerateRefreshToken(usr.Id); err != nil {
+	if tknresp.Refresh_token, err = auth.jwtrepo.GenerateRefreshToken(usr.Id, usr.Role); err != nil {
 		fmt.Println("Authservice GenerateRefreshToken failed")
 		return authErrorResponse()
 	}
@@ -73,6 +73,7 @@ func (auth *AuthService) Signup(user domain.SignupUserParams) error {
 		Name:       user.Name,
 		Isverified: false,
 		Tokenhash:  []byte(tkhs),
+		Role:       "user",
 	}
 
 	err := auth.prsrepo.CreateRegisterUser(usr)
@@ -91,21 +92,24 @@ func (auth *AuthService) AuthorizeAccess(acctoken string) error {
 	return err
 }
 
-func (auth *AuthService) ResetTokens(reftoken string) (types.SigninTokens, error) {
+func (auth *AuthService) RefreshTokens(reftoken string) (types.SigninTokens, error) {
 	usrid, err := auth.jwtrepo.ValidateRefreshToken(reftoken)
 	if err != nil {
-		fmt.Println("Authservice ResetTokens failed for user:", usrid)
+		fmt.Println("Authservice RefreshTokens failed for user:", usrid)
+		utils.ErrorLogger.Println(err)
 		return authErrorResponse()
 	}
 
-	newacctoken, err := auth.jwtrepo.GenerateAccessToken(usrid)
+	newacctoken, err := auth.jwtrepo.GenerateAccessToken(usrid, "access")
 	if err != nil {
 		fmt.Println("Authservice GenerateAccessToken failed for user:", usrid)
+		utils.ErrorLogger.Println(err)
 		return authErrorResponse()
 	}
-	newreftoken, err := auth.jwtrepo.GenerateRefreshToken(usrid)
+	newreftoken, err := auth.jwtrepo.GenerateRefreshToken(usrid, "refresh")
 	if err != nil {
 		fmt.Println("Authservice GenerateRefreshToken failed for user:", usrid)
+		utils.ErrorLogger.Println(err)
 		return authErrorResponse()
 	}
 

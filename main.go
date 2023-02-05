@@ -46,7 +46,6 @@ func main() {
 	jwtrepo := repositories.NewJwtRepo()
 
 	authsrv := service.NewAuthService(ctx, persistencerepo, jwtrepo)
-	// authsrv := authservice.NewAuthService(pgrepo, jwtrepo)
 
 	authhdl := httphdl.NewAuthHttpHandler(authsrv)
 
