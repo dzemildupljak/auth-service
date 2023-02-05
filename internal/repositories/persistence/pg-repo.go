@@ -27,7 +27,7 @@ func NewPgRepo(ctx context.Context, dbConn *gorm.DB) *PgRepo {
 func (pgrepo *PgRepo) GetListusers() ([]domain.User, error) {
 	usrs := []domain.User{}
 
-	err := pgrepo.db.WithContext(pgrepo.ctx).Table("users").Find(&usrs)
+	err := pgrepo.db.WithContext(pgrepo.ctx).Table("users").Find(&usrs).Error
 
 	if err != nil {
 		fmt.Println(err)

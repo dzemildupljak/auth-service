@@ -1,9 +1,0 @@
-Error Logger:	2023/01/27 00:18:15.527387 pg-repo.go:69: persistance: Role: zero value
-Error Logger:	2023/01/27 00:18:15.528907 pg-repo.go:78: ERROR: duplicate key value violates unique constraint "users_email_key" (SQLSTATE 23505)
-Error Logger:	2023/01/27 00:18:15.528933 auth-service.go:81: ERROR: duplicate key value violates unique constraint "users_email_key" (SQLSTATE 23505)
-Error Logger:	2023/01/27 00:18:20.106468 pg-repo.go:69: persistance: Role: zero value
-Error Logger:	2023/01/27 00:18:20.108178 pg-repo.go:78: ERROR: duplicate key value violates unique constraint "users_email_key" (SQLSTATE 23505)
-Error Logger:	2023/01/27 00:18:20.108206 auth-service.go:81: ERROR: duplicate key value violates unique constraint "users_email_key" (SQLSTATE 23505)
-Error Logger:	2023/01/27 00:18:55.943273 pg-repo.go:69: persistance: Role: zero value
-Error Logger:	2023/01/27 14:21:01.021652 mng-repo.go:46: mongo: no documents in result
-Error Logger:	2023/01/27 14:21:01.822531 mng-repo.go:46: mongo: no documents in result

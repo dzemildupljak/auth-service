@@ -18,5 +18,4 @@ func UserRoute(r *mux.Router, userhdl UserHttpHandler) {
 
 	ur.HandleFunc("/users", userhdl.ListUser).Methods("GET")
 	ur.HandleFunc("/{user_id}", userhdl.DeleteUserById).Methods("DELETE")
-
 }

@@ -5,6 +5,10 @@ WORKDIR /app
 
 COPY . /app
 
+RUN touch log/debug-log.log
+RUN touch log/error-log.log
+
+
 RUN go mod download
 
 # Install Reflex for development

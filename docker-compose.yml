@@ -22,9 +22,9 @@ services:
     image: postgres
     container_name: service-auth-pgdb
     environment:
-      - POSTGRES_USER=${POSTGRES_USER_AUTH}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD_AUTH}
-      - POSTGRES_DB=${POSTGRES_DB_AUTH}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
     ports:
       - "5434:5432"
     volumes:

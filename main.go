@@ -59,7 +59,7 @@ func main() {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode("jwt authentication succeed")
+		json.NewEncoder(w).Encode("auth healthcheck")
 	})
 
 	r.Use(utils.ReqLoggerMiddleware())
