@@ -14,6 +14,7 @@ type AuthService interface {
 }
 
 type UserService interface {
+	GetUserById(usrId uuid.UUID) (domain.User, error)
 	GetAllUsers() ([]domain.User, error)
 	DeleteUserById(usrId uuid.UUID) error
 }

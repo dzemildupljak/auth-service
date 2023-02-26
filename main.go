@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	service "github.com/dzemildupljak/auth-service/internal/core/services"
 	"github.com/dzemildupljak/auth-service/internal/db/pgdb"
@@ -17,10 +18,6 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
-
-// func init() {
-
-// }
 
 func main() {
 	fmt.Println("Hello from auth service!!!")
@@ -35,7 +32,7 @@ func main() {
 	pgdb.ExecMigrations(pgdbconn)
 
 	// mongo conn and repo
-	// dbname := os.Getenv("POSTGRES_DB_AUTH")
+	// dbname := os.Getenv("MONGO_INITDB")
 	// mngdbconn := mngdb.DbConnection(ctx)
 	// mngDB := mngdbconn.Database(dbname)
 	// mngdb.ExecMigrations(ctx, mngDB)
@@ -67,14 +64,13 @@ func main() {
 	httphdl.UserRoute(r, *usrhdl)
 
 	appport := os.Getenv("APP_PORT")
+	allowedorigins := strings.Split(os.Getenv("CORS_ALLOWED_ORIGINS"), ",")
 
-	// headers := handlers.AllowedHeaders([]string{"*"})
 	headers := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
-	// methods := handlers.AllowedMethods([]string{"*"})
 	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"})
-	origins := handlers.AllowedOrigins([]string{"http://localhost:3000/"})
+	origins := handlers.AllowedOrigins(allowedorigins)
+	// origins := handlers.AllowedOrigins([]string{"http://localhost:3000/"})
 	ttl := handlers.MaxAge(3600)
-	// handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}), handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}), handlers.AllowedOrigins([]string{"*"})
 
 	fmt.Println("ListenAndServe on port :" + appport)
 	http.ListenAndServe(":"+appport, handlers.CORS(headers, methods, origins, ttl)(r))

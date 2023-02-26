@@ -2,7 +2,6 @@ package persistence
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/dzemildupljak/auth-service/internal/core/domain"
@@ -30,7 +29,6 @@ func (pgrepo *PgRepo) GetListusers() ([]domain.User, error) {
 	err := pgrepo.db.WithContext(pgrepo.ctx).Table("users").Find(&usrs).Error
 
 	if err != nil {
-		fmt.Println(err)
 		utils.ErrorLogger.Println(err)
 	}
 
@@ -42,7 +40,6 @@ func (pgrepo *PgRepo) GetUserById(id uuid.UUID) (domain.User, error) {
 
 	err := pgrepo.db.WithContext(pgrepo.ctx).Table("users").Where("Id = ?", id).First(&usr).Error
 	if err != nil {
-		fmt.Println(err)
 		utils.ErrorLogger.Println(err)
 	}
 
@@ -55,7 +52,6 @@ func (pgrepo *PgRepo) GetUserByMail(mail string) (domain.User, error) {
 
 	err := pgrepo.db.WithContext(pgrepo.ctx).First(&usr, usrQuery).Error
 	if err != nil {
-		fmt.Println(err)
 		utils.ErrorLogger.Println(err)
 	}
 
@@ -65,8 +61,7 @@ func (pgrepo *PgRepo) GetUserByMail(mail string) (domain.User, error) {
 func (pgrepo *PgRepo) CreateRegisterUser(usr domain.User) error {
 	err := validator.Validate(usr)
 	if err != nil {
-		fmt.Println("persistance:", err)
-		utils.ErrorLogger.Println("persistance:", err)
+		utils.ErrorLogger.Println(err)
 	}
 
 	usr.CreatedAt = time.Now()
@@ -74,7 +69,6 @@ func (pgrepo *PgRepo) CreateRegisterUser(usr domain.User) error {
 	err = pgrepo.db.WithContext(pgrepo.ctx).Create(&usr).Error
 
 	if err != nil {
-		fmt.Println(err)
 		utils.ErrorLogger.Println(err)
 	}
 
@@ -88,7 +82,6 @@ func (pgrepo *PgRepo) DeleteUserById(id uuid.UUID) error {
 	err := pgrepo.db.WithContext(pgrepo.ctx).Table("users").Where("Id = ?", id).Delete(&u).Error
 
 	if err != nil {
-		fmt.Println(err)
 		utils.ErrorLogger.Println(err)
 	}
 

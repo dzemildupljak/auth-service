@@ -98,10 +98,12 @@ func (jwtrepo *JwtRepo) ValidateAccessToken(acctoken string) (uuid.UUID, error) 
 	claims, ok := token.Claims.(*utils.AccessTokenCustomClaims)
 
 	if !ok || !token.Valid || claims.UserId == "" || claims.KeyType != "access" {
+		utils.ErrorLogger.Println("invalid token: authentication failed")
 		return uuid.Nil, errors.New("invalid token: authentication failed")
 	}
 	usrid, err := uuid.Parse(claims.UserId)
 	if err != nil {
+		utils.ErrorLogger.Println("invalid token: authentication failed")
 		return uuid.Nil, errors.New("invalid token: authentication failed")
 	}
 
@@ -184,10 +186,12 @@ func (jwtrepo *JwtRepo) ValidateRefreshToken(reftoken string) (uuid.UUID, error)
 	claims, ok := token.Claims.(*utils.RefreshTokenCustomClaims)
 
 	if !ok || !token.Valid || claims.UserId == "" || claims.KeyType != "refresh" {
+		utils.ErrorLogger.Println("invalid token: authentication failed")
 		return uuid.Nil, errors.New("invalid token: authentication failed")
 	}
 	usrid, err := uuid.Parse(claims.UserId)
 	if err != nil {
+		utils.ErrorLogger.Println("invalid token: authentication failed")
 		return uuid.Nil, errors.New("invalid token: authentication failed")
 	}
 
