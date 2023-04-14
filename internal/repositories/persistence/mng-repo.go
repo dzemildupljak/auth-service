@@ -3,7 +3,6 @@ package persistence
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 	"time"
 
@@ -46,7 +45,22 @@ func (mngrepo *MngRepo) GetListusers() ([]domain.User, error) {
 	return usrs, nil
 }
 func (mngrepo *MngRepo) GetUserById(id uuid.UUID) (domain.User, error) {
-	return domain.User{}, nil
+	collection := mngrepo.db.Collection("user")
+	var usr domain.User
+
+	query := bson.M{"_id": id}
+	err := collection.FindOne(mngrepo.ctx, query).Decode(&usr)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			utils.ErrorLogger.Println(err)
+			return domain.User{}, err
+		}
+		utils.ErrorLogger.Println(err)
+		return domain.User{}, err
+	}
+
+	return usr, nil
 }
 
 func (mngrepo *MngRepo) GetUserByMail(mail string) (domain.User, error) {
@@ -91,7 +105,7 @@ func (mngrepo *MngRepo) DeleteUserById(id uuid.UUID) error {
 	collection := mngrepo.db.Collection("user")
 
 	query := bson.M{"_id": id}
-	res, err := collection.DeleteOne(mngrepo.ctx, query)
+	_, err := collection.DeleteOne(mngrepo.ctx, query)
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -101,6 +115,6 @@ func (mngrepo *MngRepo) DeleteUserById(id uuid.UUID) error {
 		utils.ErrorLogger.Println(err)
 		return err
 	}
-	fmt.Println(res, err)
+
 	return nil
 }

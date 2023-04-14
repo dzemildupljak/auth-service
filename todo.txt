@@ -3,7 +3,5 @@
 - start flow auth0 for google
 
 
-
-
-Key pair EC2 
-name: risc_auth_service_key
+- start authorization
+- generate api_key

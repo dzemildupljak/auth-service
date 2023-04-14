@@ -14,10 +14,10 @@ func AuthRoute(r *mux.Router, authhdl AuthHttpHandler) {
 }
 
 func UserRoute(r *mux.Router, userhdl UserHttpHandler) {
-	ur := r.PathPrefix("/user").Subrouter()
+	ur := r.PathPrefix("/users").Subrouter()
 
-	ur.Use(AccTknMiddleware)
-
-	ur.HandleFunc("/users", userhdl.ListUser).Methods("GET")
+	ur.HandleFunc("", userhdl.ListUser).Methods("GET")
+	ur.HandleFunc("/{user_id}", userhdl.GetUserById).Methods("GET")
 	ur.HandleFunc("/{user_id}", userhdl.DeleteUserById).Methods("DELETE")
+	ur.Use(AccTknMiddleware)
 }

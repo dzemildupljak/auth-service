@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	service "github.com/dzemildupljak/auth-service/internal/core/services"
-	"github.com/dzemildupljak/auth-service/internal/db/pgdb"
+	"github.com/dzemildupljak/auth-service/internal/db/mngdb"
 	"github.com/dzemildupljak/auth-service/internal/handlers/httphdl"
 	"github.com/dzemildupljak/auth-service/internal/repositories"
 	"github.com/dzemildupljak/auth-service/internal/repositories/persistence"
@@ -26,18 +26,18 @@ func main() {
 	utils.Load()
 
 	// postgres conn and repo
-	pgdbconn := pgdb.DbConnection()
-	defer pgdb.CloseDbConnection(pgdbconn)
-	persistencerepo := persistence.NewPgRepo(ctx, pgdbconn)
-	pgdb.ExecMigrations(pgdbconn)
+	// pgdbconn := pgdb.DbConnection()
+	// defer pgdb.CloseDbConnection(pgdbconn)
+	// persistencerepo := persistence.NewPgRepo(ctx, pgdbconn)
+	// pgdb.ExecMigrations(pgdbconn)
 
 	// mongo conn and repo
-	// dbname := os.Getenv("MONGO_INITDB")
-	// mngdbconn := mngdb.DbConnection(ctx)
-	// mngDB := mngdbconn.Database(dbname)
-	// mngdb.ExecMigrations(ctx, mngDB)
-	// defer mngdb.DbDisonnection(ctx, mngdbconn)
-	// persistencerepo := persistence.NewMngRepo(ctx, mngDB)
+	dbname := os.Getenv("MONGO_INITDB")
+	mngdbconn := mngdb.DbConnection(ctx)
+	mngDB := mngdbconn.Database(dbname)
+	mngdb.ExecMigrations(ctx, mngDB)
+	defer mngdb.DbDisonnection(ctx, mngdbconn)
+	persistencerepo := persistence.NewMngRepo(ctx, mngDB)
 
 	// jwt repo
 	jwtrepo := repositories.NewJwtRepo()

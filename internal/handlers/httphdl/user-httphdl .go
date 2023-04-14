@@ -34,6 +34,30 @@ func (handler *UserHttpHandler) ListUser(w http.ResponseWriter, r *http.Request)
 	})
 }
 
+func (handler *UserHttpHandler) GetUserById(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	usrid, err := uuid.Parse(params["user_id"])
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode("httphdl get user by id failed")
+		return
+	}
+
+	usr, err := handler.service.GetUserById(usrid)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode("httphdl get user by id failed")
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(ResponsePayload{
+		Payload: usr,
+	})
+
+}
 func (handler *UserHttpHandler) DeleteUserById(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	usrid, err := uuid.Parse(params["user_id"])
