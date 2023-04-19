@@ -32,7 +32,7 @@ func (pgrepo *PgRepo) GetListusers() ([]domain.User, error) {
 		utils.ErrorLogger.Println(err)
 	}
 
-	return usrs, nil
+	return usrs, err
 }
 
 func (pgrepo *PgRepo) GetUserById(id uuid.UUID) (domain.User, error) {
@@ -43,7 +43,18 @@ func (pgrepo *PgRepo) GetUserById(id uuid.UUID) (domain.User, error) {
 		utils.ErrorLogger.Println(err)
 	}
 
-	return usr, nil
+	return usr, err
+}
+
+func (pgrepo *PgRepo) GetMiddUserById(id uuid.UUID) (domain.UserMiddleware, error) {
+	usr := domain.UserMiddleware{}
+
+	err := pgrepo.db.WithContext(pgrepo.ctx).Table("users").Where("Id = ?", id).First(&usr).Error
+	if err != nil {
+		utils.ErrorLogger.Println(err)
+	}
+
+	return usr, err
 }
 
 func (pgrepo *PgRepo) GetUserByMail(mail string) (domain.User, error) {

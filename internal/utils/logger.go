@@ -46,8 +46,8 @@ func ReqLoggerMiddleware() func(http.Handler) http.Handler {
 				if !ok {
 					requestID = "unknown"
 				}
-				fmt.Println(requestID, r.Method, r.URL.Path, r.RemoteAddr, r.UserAgent())
-				DebugLogger.Println(requestID, r.Method, r.URL.Path, r.RemoteAddr, r.UserAgent())
+				fmt.Println(r.Method, r.URL.Path, requestID, r.RemoteAddr, r.UserAgent())
+				DebugLogger.Println(r.Method, r.URL.Path, requestID, r.RemoteAddr, r.UserAgent())
 			}()
 
 			next.ServeHTTP(w, r)

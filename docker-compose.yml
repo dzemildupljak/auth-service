@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   # -----------------------
-  # auth service pgdb
+  # auth service mngdb
   # -----------------------
   serviceauthmngdb:
     image: mongo
@@ -11,7 +11,7 @@ services:
     env_file:
       - .env
     ports:
-      - '6000:27017'
+      - "6000:27017"
     volumes:
       - auth_service_mngvol:/data/db
 
@@ -29,6 +29,22 @@ services:
       - "5434:5432"
     volumes:
       - auth_service_pgvol:/var/lib/postgresql/data
+    
+  # -----------------------
+  # auth service redis
+  # -----------------------
+  serviceauthredis:
+    image: redis/redis-stack
+    container_name: service-auth-redis
+    restart: always
+    environment:
+      REDIS_PWD: '${REDIS_PWD}'
+    ports:
+      - '6380:6379'
+    command: redis-server --save 20 1 --loglevel warning --requirepass $REDIS_PWD
+    volumes:
+      - auth_service_redisvol:/data
+    
   # -----------------------
   # auth service
   # -----------------------
@@ -53,3 +69,5 @@ volumes:
     name: auth_service_pgvol
   auth_service_mngvol:
     name: auth_service_mngvol
+  auth_service_redisvol:
+    name: auth_service_redisvol

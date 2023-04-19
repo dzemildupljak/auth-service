@@ -1,17 +1,20 @@
 package httphdl
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"os"
 
+	"github.com/dzemildupljak/auth-service/internal/core/ports"
+	"github.com/dzemildupljak/auth-service/internal/repositories/persistence"
 	"github.com/dzemildupljak/auth-service/internal/utils"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 )
 
-func AccTknMiddleware(next http.Handler) http.Handler {
+func AccTknMiddleware(next http.Handler, persrepo ports.PersistenceRepository, redis persistence.RedisRepo) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		acctoken, err := extractToken(r)
@@ -62,6 +65,23 @@ func AccTknMiddleware(next http.Handler) http.Handler {
 		_, err = uuid.Parse(claims.UserId)
 		if err != nil {
 			TokenErrorResponse(w)
+			return
+		}
+
+		midusr := redis.GetMiddlewareUser(claims.UserId)
+
+		if midusr.Id != claims.UserId {
+			usrMidd, err := persrepo.GetMiddUserById(uuid.MustParse(claims.UserId))
+			fmt.Println("REDISS	!!!!")
+			if err != nil || usrMidd.Id != claims.UserId {
+				TokenErrorResponse(w)
+				return
+			} else {
+				redis.SetMiddlewareUser(usrMidd)
+			}
+		} else if !midusr.Isverified {
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode("authentication failed, user is not verified")
 			return
 		}
 

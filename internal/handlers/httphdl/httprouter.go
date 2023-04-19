@@ -1,6 +1,10 @@
 package httphdl
 
 import (
+	"net/http"
+
+	"github.com/dzemildupljak/auth-service/internal/core/ports"
+	"github.com/dzemildupljak/auth-service/internal/repositories/persistence"
 	"github.com/gorilla/mux"
 )
 
@@ -13,11 +17,13 @@ func AuthRoute(r *mux.Router, authhdl AuthHttpHandler) {
 	ar.HandleFunc("/refresh-tokens", authhdl.RefreshToken).Methods("GET")
 }
 
-func UserRoute(r *mux.Router, userhdl UserHttpHandler) {
+func UserRoute(r *mux.Router, userhdl UserHttpHandler, persrepo ports.PersistenceRepository, redis persistence.RedisRepo) {
 	ur := r.PathPrefix("/users").Subrouter()
 
 	ur.HandleFunc("", userhdl.ListUser).Methods("GET")
 	ur.HandleFunc("/{user_id}", userhdl.GetUserById).Methods("GET")
 	ur.HandleFunc("/{user_id}", userhdl.DeleteUserById).Methods("DELETE")
-	ur.Use(AccTknMiddleware)
+	ur.Use(func(h http.Handler) http.Handler {
+		return AccTknMiddleware(h, persrepo, redis)
+	})
 }

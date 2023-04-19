@@ -9,14 +9,15 @@ import (
 	"strings"
 
 	service "github.com/dzemildupljak/auth-service/internal/core/services"
-	"github.com/dzemildupljak/auth-service/internal/db/mngdb"
+	"github.com/dzemildupljak/auth-service/internal/db/pgdb"
 	"github.com/dzemildupljak/auth-service/internal/handlers/httphdl"
 	"github.com/dzemildupljak/auth-service/internal/repositories"
 	"github.com/dzemildupljak/auth-service/internal/repositories/persistence"
-
 	"github.com/dzemildupljak/auth-service/internal/utils"
+
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/redis/go-redis/v9"
 )
 
 func main() {
@@ -26,27 +27,39 @@ func main() {
 	utils.Load()
 
 	// postgres conn and repo
-	// pgdbconn := pgdb.DbConnection()
-	// defer pgdb.CloseDbConnection(pgdbconn)
-	// persistencerepo := persistence.NewPgRepo(ctx, pgdbconn)
+	pgdbconn := pgdb.DbConnection()
+	defer pgdb.CloseDbConnection(pgdbconn)
 	// pgdb.ExecMigrations(pgdbconn)
 
+	persistencerepo := persistence.NewPgRepo(ctx, pgdbconn)
+
 	// mongo conn and repo
-	dbname := os.Getenv("MONGO_INITDB")
-	mngdbconn := mngdb.DbConnection(ctx)
-	mngDB := mngdbconn.Database(dbname)
-	mngdb.ExecMigrations(ctx, mngDB)
-	defer mngdb.DbDisonnection(ctx, mngdbconn)
-	persistencerepo := persistence.NewMngRepo(ctx, mngDB)
+	// dbname := os.Getenv("MONGO_INITDB")
+	// mngdbconn := mngdb.DbConnection(ctx)
+	// mngDB := mngdbconn.Database(dbname)
+	// mngdb.ExecMigrations(ctx, mngDB)
+	// defer mngdb.DbDisonnection(ctx, mngdbconn)
+	// persistencerepo := persistence.NewMngRepo(ctx, mngDB)
+
+	redisPwd := os.Getenv("REDIS_PWD")
+	redislient := redis.NewClient(&redis.Options{
+		Addr:     "serviceauthredis:6379",
+		Password: redisPwd,
+		DB:       0,
+	})
+	pong, err := redislient.Ping(ctx).Result()
+	fmt.Println(pong, err)
 
 	// jwt repo
 	jwtrepo := repositories.NewJwtRepo()
 
-	authsrv := service.NewAuthService(ctx, persistencerepo, jwtrepo)
+	redisrepo := persistence.NewRedisRepo(ctx, redislient)
+
+	authsrv := service.NewAuthService(ctx, persistencerepo, jwtrepo, redisrepo)
 
 	authhdl := httphdl.NewAuthHttpHandler(authsrv)
 
-	usersrv := service.NewUserService(ctx, persistencerepo)
+	usersrv := service.NewUserService(ctx, persistencerepo, redisrepo)
 	usrhdl := httphdl.NewUserHttpHandler(usersrv)
 
 	r := mux.NewRouter()
@@ -61,7 +74,7 @@ func main() {
 	r.Use(utils.ReqLoggerMiddleware())
 
 	httphdl.AuthRoute(r, *authhdl)
-	httphdl.UserRoute(r, *usrhdl)
+	httphdl.UserRoute(r, *usrhdl, persistencerepo, *redisrepo)
 
 	appport := os.Getenv("APP_PORT")
 	allowedorigins := strings.Split(os.Getenv("CORS_ALLOWED_ORIGINS"), ",")

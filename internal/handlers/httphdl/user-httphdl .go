@@ -23,7 +23,7 @@ func (handler *UserHttpHandler) ListUser(w http.ResponseWriter, r *http.Request)
 	usrs, err := handler.service.GetAllUsers()
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("httphdl userlist retrieve failed")
+		json.NewEncoder(w).Encode("user list retrieve failed")
 		return
 	}
 
@@ -31,6 +31,7 @@ func (handler *UserHttpHandler) ListUser(w http.ResponseWriter, r *http.Request)
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(ResponsePayload{
 		Payload: usrs,
+		Status:  true,
 	})
 }
 
@@ -40,14 +41,14 @@ func (handler *UserHttpHandler) GetUserById(w http.ResponseWriter, r *http.Reque
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("httphdl get user by id failed")
+		json.NewEncoder(w).Encode("user not found")
 		return
 	}
 
 	usr, err := handler.service.GetUserById(usrid)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("httphdl get user by id failed")
+		json.NewEncoder(w).Encode("user not found")
 		return
 	}
 
@@ -55,6 +56,7 @@ func (handler *UserHttpHandler) GetUserById(w http.ResponseWriter, r *http.Reque
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(ResponsePayload{
 		Payload: usr,
+		Status:  true,
 	})
 
 }
@@ -64,14 +66,14 @@ func (handler *UserHttpHandler) DeleteUserById(w http.ResponseWriter, r *http.Re
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("httphdl user delete failed")
+		json.NewEncoder(w).Encode("user delete failed")
 		return
 	}
 
 	err = handler.service.DeleteUserById(usrid)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("httphdl user delete failed")
+		json.NewEncoder(w).Encode("user delete failed")
 		return
 	}
 

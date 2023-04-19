@@ -11,24 +11,21 @@ import (
 )
 
 type UserService struct {
-	ctx     context.Context
-	prsrepo ports.PersistenceRepository
+	ctx       context.Context
+	prsrepo   ports.PersistenceRepository
+	redisrepo ports.RedisRepository
 }
 
-func NewUserService(ctx context.Context, authrepo ports.PersistenceRepository) *UserService {
+func NewUserService(
+	ctx context.Context,
+	prsrepo ports.PersistenceRepository,
+	redisrepo ports.RedisRepository,
+) *UserService {
 	return &UserService{
-		ctx:     ctx,
-		prsrepo: authrepo,
+		ctx:       ctx,
+		prsrepo:   prsrepo,
+		redisrepo: redisrepo,
 	}
-}
-
-func (user *UserService) DeleteUserById(usrId uuid.UUID) error {
-	err := user.prsrepo.DeleteUserById(usrId)
-	if err != nil {
-		fmt.Println("Userservice DeleteUserById falied")
-		utils.ErrorLogger.Println(err)
-	}
-	return err
 }
 
 func (user *UserService) GetAllUsers() ([]domain.User, error) {
@@ -38,6 +35,7 @@ func (user *UserService) GetAllUsers() ([]domain.User, error) {
 		fmt.Println("Userservice GetListusers falied")
 		utils.ErrorLogger.Println(err)
 	}
+
 	return usrs, err
 }
 
@@ -48,5 +46,26 @@ func (user *UserService) GetUserById(usrId uuid.UUID) (domain.User, error) {
 		fmt.Println("Userservice GetUserById falied")
 		utils.ErrorLogger.Println(err)
 	}
+
 	return usr, err
+}
+
+func (user *UserService) DeleteUserById(usrId uuid.UUID) error {
+
+	err := user.redisrepo.ClearItemByKey(usrId.String())
+	if err != nil {
+		fmt.Println("Userservice DeleteUserById redis falied")
+		utils.ErrorLogger.Println(err)
+		return err
+	}
+
+	err = user.prsrepo.DeleteUserById(usrId)
+	fmt.Println(err)
+
+	if err != nil {
+		fmt.Println("Userservice DeleteUserById falied")
+		utils.ErrorLogger.Println(err)
+	}
+
+	return err
 }

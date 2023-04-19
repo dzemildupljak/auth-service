@@ -91,7 +91,7 @@ func (jwtrepo *JwtRepo) ValidateAccessToken(acctoken string) (uuid.UUID, error) 
 
 	if err != nil {
 		utils.ErrorLogger.Println("Unable to parse claims", "error", err)
-		fmt.Println("Unable to parse claims  123", "error", err)
+		fmt.Println("Unable to parse claims", "error", err)
 		return uuid.Nil, err
 	}
 

@@ -39,3 +39,10 @@ type UserLogin struct {
 	Email    string `json:"email" validate:"nonzero"`
 	Password string `json:"password" validate:"nonzero"`
 }
+
+type UserMiddleware struct {
+	Id         string `json:"id"`
+	Email      string `json:"email"`
+	Username   string `json:"username"`
+	Isverified bool   `json:"isverified"`
+}
