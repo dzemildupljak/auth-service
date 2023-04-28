@@ -15,6 +15,12 @@ func AuthRoute(r *mux.Router, authhdl AuthHttpHandler) {
 	ar.HandleFunc("/login", authhdl.Signin).Methods("POST")
 	ar.HandleFunc("/signup", authhdl.Signup).Methods("POST")
 	ar.HandleFunc("/refresh-tokens", authhdl.RefreshToken).Methods("GET")
+
+	o2r := r.PathPrefix("/oauth").Subrouter()
+
+	o2r.HandleFunc("/google/signin", authhdl.GoogleSignin)
+	o2r.HandleFunc("/google/callback", authhdl.GoogleCallback)
+
 }
 
 func UserRoute(r *mux.Router, userhdl UserHttpHandler, persrepo ports.PersistenceRepository, redis persistence.RedisRepo) {

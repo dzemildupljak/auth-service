@@ -72,7 +72,6 @@ func AccTknMiddleware(next http.Handler, persrepo ports.PersistenceRepository, r
 
 		if midusr.Id != claims.UserId {
 			usrMidd, err := persrepo.GetMiddUserById(uuid.MustParse(claims.UserId))
-			fmt.Println("REDISS	!!!!")
 			if err != nil || usrMidd.Id != claims.UserId {
 				TokenErrorResponse(w)
 				return

@@ -29,7 +29,7 @@ func main() {
 	// postgres conn and repo
 	pgdbconn := pgdb.DbConnection()
 	defer pgdb.CloseDbConnection(pgdbconn)
-	// pgdb.ExecMigrations(pgdbconn)
+	pgdb.ExecMigrations(pgdbconn)
 
 	persistencerepo := persistence.NewPgRepo(ctx, pgdbconn)
 

@@ -101,6 +101,26 @@ func (mngrepo *MngRepo) CreateRegisterUser(usr domain.User) error {
 	return nil
 }
 
+func (mngrepo *MngRepo) GetMiddUserById(id uuid.UUID) (domain.UserMiddleware, error) {
+	collection := mngrepo.db.Collection("user")
+	var usr domain.UserMiddleware
+
+	query := bson.M{"_id": id}
+	err := collection.FindOne(mngrepo.ctx, query).Decode(&usr)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			utils.ErrorLogger.Println(err)
+			return domain.UserMiddleware{}, err
+		}
+		utils.ErrorLogger.Println(err)
+		return domain.UserMiddleware{}, err
+	}
+
+	return usr, nil
+	// return domain.UserMiddleware{}, nil
+}
+
 func (mngrepo *MngRepo) DeleteUserById(id uuid.UUID) error {
 	collection := mngrepo.db.Collection("user")
 
