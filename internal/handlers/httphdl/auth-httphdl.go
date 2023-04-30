@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"strings"
 
-	"golang.org/x/oauth2"
 	"gopkg.in/validator.v2"
 
 	"github.com/dzemildupljak/auth-service/internal/core/domain"
@@ -16,8 +15,8 @@ import (
 )
 
 type AuthHttpHandler struct {
-	service   ports.AuthService
-	ssogoogle *oauth2.Config
+	service ports.AuthService
+	// ssogoogle *oauth2.Config
 }
 
 func NewAuthHttpHandler(srv ports.AuthService) *AuthHttpHandler {

@@ -82,7 +82,7 @@ func (mngrepo *MngRepo) GetUserByMail(mail string) (domain.User, error) {
 	return usr, nil
 }
 
-func (mngrepo *MngRepo) CreateRegisterUser(usr domain.User) error {
+func (mngrepo *MngRepo) CreateRegisterUser(usr domain.User) (domain.User, error) {
 	collection := mngrepo.db.Collection("user")
 
 	usr.CreatedAt = time.Now()
@@ -93,12 +93,12 @@ func (mngrepo *MngRepo) CreateRegisterUser(usr domain.User) error {
 	if err != nil {
 		if er, ok := err.(mongo.WriteException); ok && er.WriteErrors[0].Code == 11000 {
 			utils.ErrorLogger.Println(err)
-			return errors.New("user with that email already exist")
+			return domain.User{}, errors.New("user with that email already exist")
 		}
 		utils.ErrorLogger.Println(err)
-		return err
+		return domain.User{}, err
 	}
-	return nil
+	return domain.User{}, nil
 }
 
 func (mngrepo *MngRepo) GetMiddUserById(id uuid.UUID) (domain.UserMiddleware, error) {
@@ -118,7 +118,6 @@ func (mngrepo *MngRepo) GetMiddUserById(id uuid.UUID) (domain.UserMiddleware, er
 	}
 
 	return usr, nil
-	// return domain.UserMiddleware{}, nil
 }
 
 func (mngrepo *MngRepo) DeleteUserById(id uuid.UUID) error {

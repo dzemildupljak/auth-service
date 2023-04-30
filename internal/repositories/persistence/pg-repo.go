@@ -69,7 +69,7 @@ func (pgrepo *PgRepo) GetUserByMail(mail string) (domain.User, error) {
 	return usr, err
 }
 
-func (pgrepo *PgRepo) CreateRegisterUser(usr domain.User) error {
+func (pgrepo *PgRepo) CreateRegisterUser(usr domain.User) (domain.User, error) {
 	err := validator.Validate(usr)
 	if err != nil {
 		utils.ErrorLogger.Println(err)
@@ -77,13 +77,13 @@ func (pgrepo *PgRepo) CreateRegisterUser(usr domain.User) error {
 
 	usr.CreatedAt = time.Now()
 	usr.UpdatedAt = time.Now()
-	err = pgrepo.db.WithContext(pgrepo.ctx).Create(&usr).Error
+	result := pgrepo.db.WithContext(pgrepo.ctx).Create(&usr)
 
-	if err != nil {
-		utils.ErrorLogger.Println(err)
+	if result.Error != nil {
+		utils.ErrorLogger.Println(result.Error)
 	}
 
-	return err
+	return usr, err
 }
 
 func (pgrepo *PgRepo) DeleteUserById(id uuid.UUID) error {

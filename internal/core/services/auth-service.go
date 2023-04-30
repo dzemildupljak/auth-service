@@ -9,6 +9,7 @@ import (
 	"github.com/dzemildupljak/auth-service/internal/core/ports"
 	"github.com/dzemildupljak/auth-service/internal/utils"
 	"github.com/dzemildupljak/auth-service/types"
+	"golang.org/x/oauth2"
 
 	"github.com/google/uuid"
 )
@@ -22,6 +23,7 @@ func authErrorResponse() (types.SigninTokens, error) {
 
 type AuthService struct {
 	ctx       context.Context
+	ssogoogle *oauth2.Config
 	prsrepo   ports.PersistenceRepository
 	jwtrepo   ports.JwtRepository
 	redisrepo ports.RedisRepository
@@ -97,7 +99,7 @@ func (auth *AuthService) Signup(user domain.SignupUserParams) error {
 		Role:       "user",
 	}
 
-	err := auth.prsrepo.CreateRegisterUser(usr)
+	_, err := auth.prsrepo.CreateRegisterUser(usr)
 
 	if err != nil {
 		fmt.Println("Authservice CreateRegisterUser failed")

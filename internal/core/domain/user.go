@@ -20,6 +20,7 @@ type User struct {
 	UpdatedAt  time.Time `json:"-" gorm:"not null" bson:"updatedat"`
 	DeletedAt  time.Time `json:"-" gorm:"index; not null" bson:"deletedat"`
 	Role       string    `json:"role" validate:"nonzero" gorm:"not null" bson:"role,omitempty"`
+	GoogleId   string    `json:"-" bson:"google_id"`
 }
 
 type SignupUserParams struct {

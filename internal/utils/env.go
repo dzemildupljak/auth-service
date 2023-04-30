@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func Load() {
+func LoadEnv() {
 	filePath := ".env"
 	environment := os.Getenv("ENVIRONMENT")
 

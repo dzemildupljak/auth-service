@@ -11,7 +11,7 @@ type PersistenceRepository interface {
 	GetMiddUserById(id uuid.UUID) (domain.UserMiddleware, error)
 	DeleteUserById(id uuid.UUID) error
 	GetUserByMail(mail string) (domain.User, error)
-	CreateRegisterUser(usr domain.User) error
+	CreateRegisterUser(usr domain.User) (domain.User, error)
 }
 
 type JwtRepository interface {

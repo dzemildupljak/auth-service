@@ -1,6 +1,6 @@
 - start nginx config more detailed
 - start email service
-- start flow auth0 for google
+- start flow oauth for google
 
 
 - start authorization

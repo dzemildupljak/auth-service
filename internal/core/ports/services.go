@@ -8,6 +8,8 @@ import (
 
 type AuthService interface {
 	Signup(user domain.SignupUserParams) error
+	OAuthSignin() (string, error)
+	OAuthGoogleCallback(code, state string) (types.SigninTokens, error)
 	Signin(user domain.UserLogin) (types.SigninTokens, error)
 	AuthorizeAccess(acctoken string) error
 	RefreshTokens(reftoken string) (types.SigninTokens, error)
