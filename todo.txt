@@ -1,7 +1,4 @@
 - start nginx config more detailed
-- start email service
 - start flow oauth for google
-
-
-- start authorization
 - generate api_key
+- add v1 to route prefix

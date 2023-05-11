@@ -23,6 +23,20 @@ type User struct {
 	GoogleId   string    `json:"-" bson:"google_id"`
 }
 
+type SignupOauthUserParams struct {
+	Id         uuid.UUID `json:"id" validate:"nonzero" gorm:"primary_key; unique; type:uuid; column:id; default:uuid_generate_v4()" bson:"_id,omitempty"`
+	Name       string    `json:"name" gorm:"not null" bson:"name"`
+	Email      string    `json:"email" validate:"nonzero" gorm:"unique;not null; index" bson:"email,omitempty"`
+	Picture    string    `json:"picture" bson:"picture"`
+	Isverified bool      `json:"isverified" gorm:"default:false" bson:"isverified"`
+	Tokenhash  []byte    `json:"-" validate:"nonzero" gorm:"not null" bson:"tokenhash"`
+	CreatedAt  time.Time `json:"-" gorm:"not null" bson:"createdat"`
+	UpdatedAt  time.Time `json:"-" gorm:"not null" bson:"updatedat"`
+	DeletedAt  time.Time `json:"-" gorm:"index; not null" bson:"deletedat"`
+	Role       string    `json:"role" validate:"nonzero" gorm:"not null" bson:"role,omitempty"`
+	GoogleId   string    `json:"-" bson:"google_id"`
+}
+
 type SignupUserParams struct {
 	Name      string `json:"name" validate:"nonzero"`
 	Username  string `json:"username" validate:"nonzero"`

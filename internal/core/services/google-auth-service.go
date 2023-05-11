@@ -2,6 +2,7 @@ package service
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -90,8 +91,8 @@ func (auth *AuthService) OAuthGoogleCallback(code, state string) (types.SigninTo
 	}
 
 	tkhs := utils.GenerateRandomString(64)
-
-	user := domain.User{
+	fmt.Println("fmt.Println(resdata)", resdata)
+	user := domain.SignupOauthUserParams{
 		Id:         uuid.New(),
 		Email:      resdata["email"].(string),
 		Name:       resdata["name"].(string),
@@ -102,12 +103,13 @@ func (auth *AuthService) OAuthGoogleCallback(code, state string) (types.SigninTo
 		Picture:    resdata["picture"].(string),
 	}
 
-	_, err = auth.prsrepo.CreateRegisterUser(user)
+	fmt.Println("user.Tokenhash", user.Tokenhash)
+
+	err = auth.prsrepo.RegisterOauthUser(user)
 	if err != nil {
 		utils.ErrorLogger.Println("callback auth.OAuthSignup", err)
 		return types.SigninTokens{}, nil
 	}
-
 	acctoken, err := auth.jwtrepo.GenerateAccessToken(user.Id, user.Role)
 	if err != nil {
 		utils.ErrorLogger.Println("callback auth.OAuthSignup GenerateAccessToken", err)

@@ -86,6 +86,44 @@ func (pgrepo *PgRepo) CreateRegisterUser(usr domain.User) (domain.User, error) {
 	return usr, err
 }
 
+func (pgrepo *PgRepo) RegisterOauthUser(usr domain.SignupOauthUserParams) error {
+	err := validator.Validate(usr)
+	if err != nil {
+		utils.ErrorLogger.Println(err)
+	}
+
+	usr.CreatedAt = time.Now()
+	usr.UpdatedAt = time.Now()
+
+	var cusr domain.User
+
+	utils.MapFields(usr, &cusr)
+	result := pgrepo.db.WithContext(pgrepo.ctx).Create(&cusr)
+
+	if result.Error != nil {
+		utils.ErrorLogger.Println(result.Error)
+	}
+
+	return err
+}
+func (pgrepo *PgRepo) UpdateRegisterUser(usr domain.User) (domain.User, error) {
+	err := validator.Validate(usr)
+	if err != nil {
+		utils.ErrorLogger.Println(err)
+	}
+
+	usr.UpdatedAt = time.Now()
+	result := pgrepo.db.WithContext(pgrepo.ctx).Table("users").Where("Id = ?", usr.Id).Updates(
+		usr,
+	)
+
+	if result.Error != nil {
+		utils.ErrorLogger.Println(result.Error)
+	}
+
+	return usr, err
+}
+
 func (pgrepo *PgRepo) DeleteUserById(id uuid.UUID) error {
 
 	u := domain.User{}

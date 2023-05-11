@@ -87,6 +87,24 @@ func (auth *AuthService) Signin(user domain.UserLogin) (types.SigninTokens, erro
 func (auth *AuthService) Signup(user domain.SignupUserParams) error {
 	tkhs := utils.GenerateRandomString(64)
 
+	exusr, err := auth.prsrepo.GetUserByMail(user.Email)
+
+	if err == nil && exusr.GoogleId != "" {
+
+		exusr.Password = utils.HashAndSalt(user.Password)
+		exusr.Username = user.Username
+		exusr.Address = user.Address
+
+		_, err = auth.prsrepo.UpdateRegisterUser(exusr)
+		if err != nil {
+			fmt.Println("Authservice CreateUpdateRegisterUser failed")
+			utils.ErrorLogger.Println(err)
+			return err
+		}
+
+		return nil
+	}
+
 	usr := domain.User{
 		Id:         uuid.New(),
 		Email:      user.Email,
@@ -99,7 +117,7 @@ func (auth *AuthService) Signup(user domain.SignupUserParams) error {
 		Role:       "user",
 	}
 
-	_, err := auth.prsrepo.CreateRegisterUser(usr)
+	_, err = auth.prsrepo.CreateRegisterUser(usr)
 
 	if err != nil {
 		fmt.Println("Authservice CreateRegisterUser failed")

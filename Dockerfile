@@ -1,18 +1,41 @@
-FROM golang:1.18 as development
+FROM golang:alpine AS builder
 
+RUN apk update && apk add openssl
 
 WORKDIR /app
 
-COPY . /app
+COPY go.mod go.sum ./
+
+RUN go mod download
+
+COPY . .
 
 RUN touch log/debug-log.log
 RUN touch log/error-log.log
 
 
-RUN go mod download
+RUN openssl genrsa -out access-private.pem 2048
+RUN openssl rsa -in access-private.pem -outform PEM -pubout -out access-public.pem
 
-RUN go build -o auth-service-img main.go
+RUN openssl genrsa -out refresh-private.pem 2048
+RUN openssl rsa -in refresh-private.pem -outform PEM -pubout -out refresh-public.pem
 
-EXPOSE 8004
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o auth-service
 
-# CMD [ "./auth-service" ]
+# Run stage
+FROM alpine
+
+COPY --from=builder /app/auth-service /app/
+
+COPY --from=builder /app/access-private.pem ./
+COPY --from=builder /app/refresh-private.pem ./
+
+COPY --from=builder /app/access-public.pem ./
+COPY --from=builder /app/refresh-public.pem ./
+
+RUN mkdir -p /log
+
+
+EXPOSE 80
+
+ENTRYPOINT ["/app/auth-service"]

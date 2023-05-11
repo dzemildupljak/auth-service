@@ -35,6 +35,7 @@ require (
 )
 
 require (
+	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/handlers v1.5.1

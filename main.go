@@ -8,16 +8,16 @@ import (
 	"os"
 	"strings"
 
+	"github.com/gorilla/handlers"
+	"github.com/gorilla/mux"
+	"github.com/redis/go-redis/v9"
+
 	service "github.com/dzemildupljak/auth-service/internal/core/services"
-	"github.com/dzemildupljak/auth-service/internal/db/mngdb"
+	"github.com/dzemildupljak/auth-service/internal/db/pgdb"
 	"github.com/dzemildupljak/auth-service/internal/handlers/httphdl"
 	"github.com/dzemildupljak/auth-service/internal/repositories"
 	"github.com/dzemildupljak/auth-service/internal/repositories/persistence"
 	"github.com/dzemildupljak/auth-service/internal/utils"
-
-	"github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
-	"github.com/redis/go-redis/v9"
 )
 
 func main() {
@@ -27,19 +27,19 @@ func main() {
 	utils.LoadEnv()
 
 	// postgres conn and repo
-	// pgdbconn := pgdb.DbConnection()
-	// defer pgdb.CloseDbConnection(pgdbconn)
-	// pgdb.ExecMigrations(pgdbconn)
+	pgdbconn := pgdb.DbConnection()
+	defer pgdb.CloseDbConnection(pgdbconn)
+	pgdb.ExecMigrations(pgdbconn)
 
-	// persistencerepo := persistence.NewPgRepo(ctx, pgdbconn)
+	persistencerepo := persistence.NewPgRepo(ctx, pgdbconn)
 
 	// mongo conn and repo
-	dbname := os.Getenv("MONGO_INITDB")
-	mngdbconn := mngdb.DbConnection(ctx)
-	mngDB := mngdbconn.Database(dbname)
-	mngdb.ExecMigrations(ctx, mngDB)
-	defer mngdb.DbDisonnection(ctx, mngdbconn)
-	persistencerepo := persistence.NewMngRepo(ctx, mngDB)
+	// dbname := os.Getenv("MONGO_INITDB")
+	// mngdbconn := mngdb.DbConnection(ctx)
+	// mngDB := mngdbconn.Database(dbname)
+	// mngdb.ExecMigrations(ctx, mngDB)
+	// defer mngdb.DbDisonnection(ctx, mngdbconn)
+	// persistencerepo := persistence.NewMngRepo(ctx, mngDB)
 
 	redisPwd := os.Getenv("REDIS_PWD")
 	redislient := redis.NewClient(&redis.Options{

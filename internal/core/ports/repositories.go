@@ -12,6 +12,8 @@ type PersistenceRepository interface {
 	DeleteUserById(id uuid.UUID) error
 	GetUserByMail(mail string) (domain.User, error)
 	CreateRegisterUser(usr domain.User) (domain.User, error)
+	UpdateRegisterUser(usr domain.User) (domain.User, error)
+	RegisterOauthUser(usr domain.SignuOauthUserParams) error
 }
 
 type JwtRepository interface {

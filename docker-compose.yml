@@ -4,16 +4,16 @@ services:
   # -----------------------
   # auth service mngdb
   # -----------------------
-  serviceauthmngdb:
-    image: mongo
-    container_name: service-auth-mngdb
-    restart: always
-    env_file:
-      - .env
-    ports:
-      - "6000:27017"
-    volumes:
-      - auth_service_mngvol:/data/db
+  # serviceauthmngdb:
+  #   image: mongo
+  #   container_name: service-auth-mngdb
+  #   restart: always
+  #   env_file:
+  #     - .env
+  #   ports:
+  #     - "6000:27017"
+  #   volumes:
+  #     - auth_service_mngvol:/data/db
 
   # -----------------------
   # auth service pgdb
@@ -58,7 +58,7 @@ services:
       dockerfile: Dockerfile.dev
     depends_on:
       - serviceauthpgdb
-      - serviceauthmngdb
+      # - serviceauthmngdb
     volumes:
       - ./:/app
     ports:
@@ -67,7 +67,7 @@ services:
 volumes:
   auth_service_pgvol:
     name: auth_service_pgvol
-  auth_service_mngvol:
-    name: auth_service_mngvol
+  # auth_service_mngvol:
+  #   name: auth_service_mngvol
   auth_service_redisvol:
     name: auth_service_redisvol
