@@ -12,12 +12,12 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/redis/go-redis/v9"
 
+	"github.com/dzemildupljak/auth-service/db/pgdb"
 	service "github.com/dzemildupljak/auth-service/internal/core/services"
-	"github.com/dzemildupljak/auth-service/internal/db/pgdb"
 	"github.com/dzemildupljak/auth-service/internal/handlers/httphdl"
 	"github.com/dzemildupljak/auth-service/internal/repositories"
 	"github.com/dzemildupljak/auth-service/internal/repositories/persistence"
-	"github.com/dzemildupljak/auth-service/internal/utils"
+	"github.com/dzemildupljak/auth-service/utils"
 )
 
 func main() {
@@ -29,7 +29,7 @@ func main() {
 	// postgres conn and repo
 	pgdbconn := pgdb.DbConnection()
 	defer pgdb.CloseDbConnection(pgdbconn)
-	pgdb.ExecMigrations(pgdbconn)
+	// pgdb.ExecMigrations(pgdbconn)
 
 	persistencerepo := persistence.NewPgRepo(ctx, pgdbconn)
 
@@ -56,11 +56,12 @@ func main() {
 	redisrepo := persistence.NewRedisRepo(ctx, redislient)
 
 	authsrv := service.NewAuthService(ctx, persistencerepo, jwtrepo, redisrepo)
-
 	authhdl := httphdl.NewAuthHttpHandler(authsrv)
 
 	usersrv := service.NewUserService(ctx, persistencerepo, redisrepo)
 	usrhdl := httphdl.NewUserHttpHandler(usersrv)
+
+	cachemid := httphdl.NewHttpCascheMiddlware(persistencerepo, *redisrepo)
 
 	r := mux.NewRouter()
 
@@ -74,7 +75,7 @@ func main() {
 	r.Use(utils.ReqLoggerMiddleware())
 
 	httphdl.AuthRoute(r, *authhdl)
-	httphdl.UserRoute(r, *usrhdl, persistencerepo, *redisrepo)
+	httphdl.UserRoute(r, *usrhdl, *cachemid)
 
 	appport := os.Getenv("APP_PORT")
 	allowedorigins := strings.Split(os.Getenv("CORS_ALLOWED_ORIGINS"), ",")

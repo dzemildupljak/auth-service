@@ -6,12 +6,14 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/dzemildupljak/auth-service/internal/core/domain"
-	"github.com/dzemildupljak/auth-service/internal/utils"
-	"github.com/dzemildupljak/auth-service/types"
 	"github.com/google/uuid"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
+
+	"github.com/dzemildupljak/auth-service/internal/core/domain"
+	"github.com/dzemildupljak/auth-service/internal/repositories"
+
+	"github.com/dzemildupljak/auth-service/utils"
 )
 
 func (service *AuthService) OAuthSignin() (string, error) {
@@ -36,12 +38,12 @@ func (service *AuthService) OAuthSignin() (string, error) {
 	return url, nil
 }
 
-func (service *AuthService) OAuthGoogleCallback(code, state string) (types.JwtTokens, error) {
+func (service *AuthService) OAuthGoogleCallback(code, state string) (repositories.JwtTokens, error) {
 	randomString := os.Getenv("GOOGLE_OAUTH_RANDOM_STRING")
 
 	if state != randomString {
 		utils.ErrorLogger.Println("wrong state value")
-		return types.JwtTokens{}, nil
+		return repositories.JwtTokens{}, nil
 	}
 
 	token, err := service.ssogoogle.Exchange(service.ctx, code)

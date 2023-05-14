@@ -6,11 +6,16 @@ import (
 	"os"
 	"time"
 
-	"github.com/dzemildupljak/auth-service/internal/utils"
-	"github.com/dzemildupljak/auth-service/types"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
+
+	"github.com/dzemildupljak/auth-service/utils"
 )
+
+type JwtTokens struct {
+	Access_token  string `json:"access_token"`
+	Refresh_token string `json:"refresh_token"`
+}
 
 type JwtRepo struct {
 	config utils.JwtConfigurations
@@ -24,17 +29,17 @@ func NewJwtRepo() *JwtRepo {
 	}
 }
 
-func (jwtrepo *JwtRepo) GenerateTokens(usrId uuid.UUID, urole string) (types.JwtTokens, error) {
+func (jwtrepo *JwtRepo) GenerateTokens(usrId uuid.UUID, urole string) (JwtTokens, error) {
 	acctoken, err := jwtrepo.GenerateAccessToken(usrId, urole)
 	if err != nil {
-		return types.JwtTokens{}, err
+		return JwtTokens{}, err
 	}
 	reftoken, err := jwtrepo.GenerateRefreshToken(usrId, urole)
 	if err != nil {
-		return types.JwtTokens{}, err
+		return JwtTokens{}, err
 	}
 
-	return types.JwtTokens{
+	return JwtTokens{
 		Access_token:  acctoken,
 		Refresh_token: reftoken,
 	}, nil

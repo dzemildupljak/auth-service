@@ -2,7 +2,7 @@ package ports
 
 import (
 	"github.com/dzemildupljak/auth-service/internal/core/domain"
-	"github.com/dzemildupljak/auth-service/types"
+	"github.com/dzemildupljak/auth-service/internal/repositories"
 	"github.com/google/uuid"
 )
 
@@ -19,7 +19,7 @@ type PersistenceRepository interface {
 }
 
 type JwtRepository interface {
-	GenerateTokens(usrId uuid.UUID, urole string) (types.JwtTokens, error)
+	GenerateTokens(usrId uuid.UUID, urole string) (repositories.JwtTokens, error)
 	GenerateAccessToken(usrId uuid.UUID, urole string) (string, error)
 	ValidateAccessToken(acctoken string) (uuid.UUID, error)
 	GenerateRefreshToken(userId uuid.UUID, urole string) (string, error)

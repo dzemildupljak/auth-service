@@ -6,11 +6,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dzemildupljak/auth-service/internal/core/domain"
-	"github.com/dzemildupljak/auth-service/internal/utils"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+
+	"github.com/dzemildupljak/auth-service/internal/core/domain"
+	"github.com/dzemildupljak/auth-service/utils"
 )
 
 type MngRepo struct {

@@ -2,14 +2,16 @@ package persistence
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
-	"github.com/dzemildupljak/auth-service/internal/core/domain"
-	"github.com/dzemildupljak/auth-service/internal/utils"
 	"github.com/google/uuid"
 	"gopkg.in/validator.v2"
 	"gorm.io/gorm"
+
+	"github.com/dzemildupljak/auth-service/internal/core/domain"
+	"github.com/dzemildupljak/auth-service/utils"
 )
 
 type PgRepo struct {
@@ -162,11 +164,12 @@ func (pgrepo *PgRepo) DeleteUserById(id uuid.UUID) error {
 
 	u := domain.User{}
 
-	err := pgrepo.db.WithContext(pgrepo.ctx).Table("users").Where("Id = ?", id).Delete(&u).Error
+	result := pgrepo.db.WithContext(pgrepo.ctx).Table("users").Where("Id = ?", id).Delete(&u)
 
-	if err != nil {
-		utils.ErrorLogger.Println(err)
+	if result.Error != nil || result.RowsAffected == 0 {
+		utils.ErrorLogger.Println(result.Error)
+		return errors.New("there is no user to delete with given id")
 	}
 
-	return err
+	return result.Error
 }

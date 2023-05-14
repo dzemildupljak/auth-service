@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/google/uuid"
+
 	"github.com/dzemildupljak/auth-service/internal/core/domain"
 	"github.com/dzemildupljak/auth-service/internal/core/ports"
-	"github.com/dzemildupljak/auth-service/internal/utils"
-	"github.com/google/uuid"
+	"github.com/dzemildupljak/auth-service/utils"
 )
 
 type UserService struct {

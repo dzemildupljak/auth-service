@@ -7,14 +7,30 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/dzemildupljak/auth-service/internal/core/ports"
-	"github.com/dzemildupljak/auth-service/internal/repositories/persistence"
-	"github.com/dzemildupljak/auth-service/internal/utils"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
+
+	"github.com/dzemildupljak/auth-service/internal/core/ports"
+	"github.com/dzemildupljak/auth-service/internal/repositories/persistence"
+	"github.com/dzemildupljak/auth-service/utils"
 )
 
-func AccTknMiddleware(next http.Handler, persrepo ports.PersistenceRepository, redis persistence.RedisRepo) http.Handler {
+type HttpCascheMiddlware struct {
+	persrepo ports.PersistenceRepository
+	redis    persistence.RedisRepo
+}
+
+func NewHttpCascheMiddlware(
+	p ports.PersistenceRepository,
+	r persistence.RedisRepo,
+) *HttpCascheMiddlware {
+	return &HttpCascheMiddlware{
+		persrepo: p,
+		redis:    r,
+	}
+}
+
+func (midd *HttpCascheMiddlware) AccessTknMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		acctoken, err := extractToken(r)
@@ -68,15 +84,15 @@ func AccTknMiddleware(next http.Handler, persrepo ports.PersistenceRepository, r
 			return
 		}
 
-		midusr := redis.GetMiddlewareUser(claims.UserId)
+		midusr := midd.redis.GetMiddlewareUser(claims.UserId)
 
 		if midusr.Id != claims.UserId {
-			usrMidd, err := persrepo.GetMiddUserById(uuid.MustParse(claims.UserId))
+			usrMidd, err := midd.persrepo.GetMiddUserById(uuid.MustParse(claims.UserId))
 			if err != nil || usrMidd.Id != claims.UserId {
 				TokenErrorResponse(w)
 				return
 			} else {
-				redis.SetMiddlewareUser(usrMidd)
+				midd.redis.SetMiddlewareUser(usrMidd)
 			}
 		} else if !midusr.Isverified {
 			w.WriteHeader(http.StatusUnauthorized)

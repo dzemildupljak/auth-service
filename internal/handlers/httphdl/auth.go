@@ -11,7 +11,7 @@ import (
 
 	"github.com/dzemildupljak/auth-service/internal/core/domain"
 	"github.com/dzemildupljak/auth-service/internal/core/ports"
-	"github.com/dzemildupljak/auth-service/internal/utils"
+	"github.com/dzemildupljak/auth-service/utils"
 )
 
 type AuthHttpHandler struct {

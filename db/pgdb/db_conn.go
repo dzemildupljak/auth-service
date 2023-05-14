@@ -14,28 +14,31 @@ import (
 
 func DbConnection() *gorm.DB {
 	var dsn string
-	serverconn := os.Getenv("INTERNAL_DATABASE_URL_RENDER")
+	var loglvl int
 
-	if serverconn != "" {
-		dsn = serverconn
+	workenv, wexsist := os.LookupEnv("WORK_ENVIRONMENT")
+
+	if wexsist && workenv != "local_dev" {
+		loglvl = 1
 	} else {
-		pguserauth := os.Getenv("POSTGRES_USER")
-		pgpassauth := os.Getenv("POSTGRES_PASSWORD")
-		pgdbauth := os.Getenv("POSTGRES_DB")
-		pgdbhost := os.Getenv("POSTGRES_HOST")
-		pgdbport := os.Getenv("POSTGRES_PORT")
-
-		dsn = fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", pgdbhost, pguserauth, pgpassauth, pgdbauth, pgdbport)
-
+		loglvl = 4
 	}
+
+	pguserauth := os.Getenv("POSTGRES_USER")
+	pgpassauth := os.Getenv("POSTGRES_PASSWORD")
+	pgdbauth := os.Getenv("POSTGRES_DB")
+	pgdbhost := os.Getenv("POSTGRES_HOST")
+	pgdbport := os.Getenv("POSTGRES_PORT")
+
+	dsn = fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", pgdbhost, pguserauth, pgpassauth, pgdbauth, pgdbport)
 
 	dbLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
 		logger.Config{
-			SlowThreshold:             time.Second,   // Slow SQL threshold
-			LogLevel:                  logger.Silent, // Log level
-			IgnoreRecordNotFoundError: true,          // Ignore ErrRecordNotFound error for logger
-			Colorful:                  true,          // Disable color
+			SlowThreshold:             time.Second,             // Slow SQL threshold
+			LogLevel:                  logger.LogLevel(loglvl), // Log level
+			IgnoreRecordNotFoundError: true,                    // Ignore ErrRecordNotFound error for logger
+			Colorful:                  true,                    // Disable color
 		},
 	)
 

@@ -5,17 +5,17 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/dzemildupljak/auth-service/internal/core/domain"
-	"github.com/dzemildupljak/auth-service/internal/core/ports"
-	"github.com/dzemildupljak/auth-service/internal/utils"
-	"github.com/dzemildupljak/auth-service/types"
+	"github.com/google/uuid"
 	"golang.org/x/oauth2"
 
-	"github.com/google/uuid"
+	"github.com/dzemildupljak/auth-service/internal/core/domain"
+	"github.com/dzemildupljak/auth-service/internal/core/ports"
+	"github.com/dzemildupljak/auth-service/internal/repositories"
+	"github.com/dzemildupljak/auth-service/utils"
 )
 
-func authErrorResponse() (types.JwtTokens, error) {
-	return types.JwtTokens{
+func authErrorResponse() (repositories.JwtTokens, error) {
+	return repositories.JwtTokens{
 		Access_token:  "",
 		Refresh_token: "",
 	}, errors.New("authentications failed")
@@ -70,7 +70,7 @@ func (service *AuthService) Signup(user domain.SignupUserParams) error {
 	return nil
 }
 
-func (service *AuthService) Signin(user domain.UserLogin) (types.JwtTokens, error) {
+func (service *AuthService) Signin(user domain.UserLogin) (repositories.JwtTokens, error) {
 	usr, err := service.prsrepo.GetUserByMail(user.Email)
 	if err != nil {
 		fmt.Println("Authservice GetUserByMail failed")
@@ -108,7 +108,7 @@ func (service *AuthService) AuthorizeAccess(acctoken string) error {
 	return err
 }
 
-func (service *AuthService) RefreshTokens(reftoken string) (types.JwtTokens, error) {
+func (service *AuthService) RefreshTokens(reftoken string) (repositories.JwtTokens, error) {
 	usrid, err := service.jwtrepo.ValidateRefreshToken(reftoken)
 	if err != nil {
 		fmt.Println("Authservice RefreshTokens failed for user:", usrid)
