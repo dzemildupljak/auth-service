@@ -14,8 +14,9 @@ type AccessTokenCustomClaims struct {
 	jwt.StandardClaims
 }
 type RefreshTokenCustomClaims struct {
-	UserId  string `json:"uid"`
-	KeyType string `json:"type"`
+	UserId   string `json:"uid"`
+	UserRole string `json:"urole"`
+	KeyType  string `json:"type"`
 	jwt.StandardClaims
 }
 

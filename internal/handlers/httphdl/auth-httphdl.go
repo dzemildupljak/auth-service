@@ -25,40 +25,6 @@ func NewAuthHttpHandler(srv ports.AuthService) *AuthHttpHandler {
 		service: srv,
 	}
 }
-
-func (handler *AuthHttpHandler) Signin(w http.ResponseWriter, r *http.Request) {
-	usr := &domain.UserLogin{}
-
-	err := json.NewDecoder(r.Body).Decode(usr)
-	if err != nil {
-		fmt.Println("httphdl Signin failed")
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode("decoding error")
-		return
-	}
-
-	err = validator.Validate(usr)
-	if err != nil {
-		fmt.Println("httphdl Signin failed")
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode("validating error")
-		return
-	}
-
-	tkns, err := handler.service.Signin(*usr)
-	if err != nil {
-		fmt.Println("httphdl Signin failed")
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode("authentication error")
-		return
-	}
-
-	fmt.Println("httphdl Signin success")
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(tkns)
-}
-
 func (handler *AuthHttpHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	utils.DebugLogger.Println("AuthHttpHandler-Signup start...")
 
@@ -92,6 +58,39 @@ func (handler *AuthHttpHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("httphdl Signup success")
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
+}
+
+func (handler *AuthHttpHandler) Signin(w http.ResponseWriter, r *http.Request) {
+	usr := &domain.UserLogin{}
+
+	err := json.NewDecoder(r.Body).Decode(usr)
+	if err != nil {
+		fmt.Println("httphdl Signin failed")
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode("decoding error")
+		return
+	}
+
+	err = validator.Validate(usr)
+	if err != nil {
+		fmt.Println("httphdl Signin failed")
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode("validating error")
+		return
+	}
+
+	tkns, err := handler.service.Signin(*usr)
+	if err != nil {
+		fmt.Println("httphdl Signin failed")
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode("authentication error")
+		return
+	}
+
+	fmt.Println("httphdl Signin success")
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(tkns)
 }
 
 func (handler *AuthHttpHandler) AuthorizeAccess(w http.ResponseWriter, r *http.Request) {

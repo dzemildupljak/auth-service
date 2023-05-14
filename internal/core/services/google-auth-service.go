@@ -2,7 +2,6 @@ package service
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -15,13 +14,13 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
-func (auth *AuthService) OAuthSignin() (string, error) {
+func (service *AuthService) OAuthSignin() (string, error) {
 	clientId := os.Getenv("GOOGLE_OAUTH_CLIENT_ID")
 	clientSecret := os.Getenv("GOOGLE_OAUTH_CLIENT_SECRET")
 	redirectUrl := os.Getenv("GOOGLE_REDIRECT_URL")
 	randomString := os.Getenv("GOOGLE_OAUTH_RANDOM_STRING")
 
-	auth.ssogoogle = &oauth2.Config{
+	service.ssogoogle = &oauth2.Config{
 		RedirectURL:  redirectUrl,
 		ClientID:     clientId,
 		ClientSecret: clientSecret,
@@ -32,97 +31,102 @@ func (auth *AuthService) OAuthSignin() (string, error) {
 		},
 		Endpoint: google.Endpoint,
 	}
-	url := auth.ssogoogle.AuthCodeURL(randomString)
+	url := service.ssogoogle.AuthCodeURL(randomString)
 
 	return url, nil
 }
 
-func (auth *AuthService) OAuthGoogleCallback(code, state string) (types.SigninTokens, error) {
+func (service *AuthService) OAuthGoogleCallback(code, state string) (types.JwtTokens, error) {
 	randomString := os.Getenv("GOOGLE_OAUTH_RANDOM_STRING")
 
 	if state != randomString {
 		utils.ErrorLogger.Println("wrong state value")
-		return types.SigninTokens{}, nil
+		return types.JwtTokens{}, nil
 	}
 
-	token, err := auth.ssogoogle.Exchange(auth.ctx, code)
+	token, err := service.ssogoogle.Exchange(service.ctx, code)
 	if err != nil {
 		utils.ErrorLogger.Println("sso google exchange", err)
-		return types.SigninTokens{}, nil
+		return authErrorResponse()
 	}
 
-	response, err := http.Get("https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + token.AccessToken)
+	googleres, err := http.Get("https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + token.AccessToken)
 	if err != nil {
 		utils.ErrorLogger.Println("get user info", err)
-		return types.SigninTokens{}, nil
+		return authErrorResponse()
 	}
 
-	defer response.Body.Close()
+	defer googleres.Body.Close()
 
-	data, err := io.ReadAll(response.Body)
+	resbody, err := io.ReadAll(googleres.Body)
 	if err != nil {
 		utils.ErrorLogger.Println("read response body", err)
-		return types.SigninTokens{}, nil
+		return authErrorResponse()
 	}
 
-	var resdata map[string]interface{}
-	err = json.Unmarshal(data, &resdata)
+	var userdata map[string]interface{}
+	err = json.Unmarshal(resbody, &userdata)
 	if err != nil {
 		utils.ErrorLogger.Println("unmarshal data", err)
-		return types.SigninTokens{}, nil
+		return authErrorResponse()
 	}
 
-	usr, err := auth.prsrepo.GetUserByMail(resdata["email"].(string))
+	usr, err := service.prsrepo.GetUserByMail(userdata["email"].(string))
+
 	if err == nil {
-		acctoken, err := auth.jwtrepo.GenerateAccessToken(usr.Id, usr.Role)
-		if err != nil {
-			utils.ErrorLogger.Println("callback auth.OAuthSignup GenerateAccessToken", err)
-			return types.SigninTokens{}, nil
+		if usr.GoogleId != "" && usr.GoogleId != userdata["id"].(string) {
+			utils.ErrorLogger.Println("wrong google id", err)
+			return authErrorResponse()
 		}
-		refrshtoken, err := auth.jwtrepo.GenerateRefreshToken(usr.Id, usr.Role)
-		if err != nil {
-			utils.ErrorLogger.Println("callback auth.OAuthSignup GenerateRefreshToken", err)
-			return types.SigninTokens{}, nil
+		ouser := domain.OauthUserParams{
+			Id:         usr.Id,
+			Name:       userdata["name"].(string),
+			Isverified: userdata["verified_email"].(bool),
+			GoogleId:   userdata["id"].(string),
+			Picture:    userdata["picture"].(string),
+			Tokenhash:  usr.Tokenhash,
+			Role:       usr.Role,
+			Email:      usr.Email,
 		}
-		return types.SigninTokens{
-			Access_token:  acctoken,
-			Refresh_token: refrshtoken,
-		}, nil
+		err = service.prsrepo.UpdateOauthUser(ouser)
+
+		if err != nil {
+			utils.ErrorLogger.Println("callback service.prsrepo.UpdateOauthUser(usr)", err)
+			return authErrorResponse()
+		}
+
+		jwttokens, err := service.jwtrepo.GenerateTokens(usr.Id, usr.Role)
+		if err != nil {
+			utils.ErrorLogger.Println("callback service.jwtrepo.GenerateTokens", err)
+			return authErrorResponse()
+		}
+		return jwttokens, nil
 	}
 
 	tkhs := utils.GenerateRandomString(64)
-	fmt.Println("fmt.Println(resdata)", resdata)
-	user := domain.SignupOauthUserParams{
+
+	user := domain.OauthUserParams{
 		Id:         uuid.New(),
-		Email:      resdata["email"].(string),
-		Name:       resdata["name"].(string),
-		Isverified: resdata["verified_email"].(bool),
+		Email:      userdata["email"].(string),
+		Name:       userdata["name"].(string),
+		Isverified: userdata["verified_email"].(bool),
 		Tokenhash:  []byte(tkhs),
 		Role:       "user",
-		GoogleId:   resdata["id"].(string),
-		Picture:    resdata["picture"].(string),
+		GoogleId:   userdata["id"].(string),
+		Picture:    userdata["picture"].(string),
 	}
 
-	fmt.Println("user.Tokenhash", user.Tokenhash)
+	err = service.prsrepo.CreateOauthUser(user)
 
-	err = auth.prsrepo.RegisterOauthUser(user)
 	if err != nil {
 		utils.ErrorLogger.Println("callback auth.OAuthSignup", err)
-		return types.SigninTokens{}, nil
-	}
-	acctoken, err := auth.jwtrepo.GenerateAccessToken(user.Id, user.Role)
-	if err != nil {
-		utils.ErrorLogger.Println("callback auth.OAuthSignup GenerateAccessToken", err)
-		return types.SigninTokens{}, nil
-	}
-	refrshtoken, err := auth.jwtrepo.GenerateRefreshToken(user.Id, user.Role)
-	if err != nil {
-		utils.ErrorLogger.Println("callback auth.OAuthSignup GenerateRefreshToken", err)
-		return types.SigninTokens{}, nil
+		return authErrorResponse()
 	}
 
-	return types.SigninTokens{
-		Access_token:  acctoken,
-		Refresh_token: refrshtoken,
-	}, nil
+	jwttokens, err := service.jwtrepo.GenerateTokens(user.Id, user.Role)
+	if err != nil {
+		utils.ErrorLogger.Println("callback service.jwtrepo.GenerateTokens", err)
+		return authErrorResponse()
+	}
+	return jwttokens, nil
 }

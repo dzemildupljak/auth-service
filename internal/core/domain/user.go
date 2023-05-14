@@ -23,7 +23,7 @@ type User struct {
 	GoogleId   string    `json:"-" bson:"google_id"`
 }
 
-type SignupOauthUserParams struct {
+type OauthUserParams struct {
 	Id         uuid.UUID `json:"id" validate:"nonzero" gorm:"primary_key; unique; type:uuid; column:id; default:uuid_generate_v4()" bson:"_id,omitempty"`
 	Name       string    `json:"name" gorm:"not null" bson:"name"`
 	Email      string    `json:"email" validate:"nonzero" gorm:"unique;not null; index" bson:"email,omitempty"`
@@ -46,6 +46,7 @@ type SignupUserParams struct {
 	Address   string `json:"address"`
 }
 
+// todo: rename it
 type UserLogin struct {
 	Email    string `json:"email" validate:"nonzero"`
 	Password string `json:"password" validate:"nonzero"`

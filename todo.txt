@@ -2,3 +2,7 @@
 - start flow oauth for google
 - generate api_key
 - add v1 to route prefix
+
+
+
+- add domain fnctionnalitya into domain files

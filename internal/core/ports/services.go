@@ -8,11 +8,11 @@ import (
 
 type AuthService interface {
 	Signup(user domain.SignupUserParams) error
+	Signin(user domain.UserLogin) (types.JwtTokens, error)
 	OAuthSignin() (string, error)
-	OAuthGoogleCallback(code, state string) (types.SigninTokens, error)
-	Signin(user domain.UserLogin) (types.SigninTokens, error)
+	OAuthGoogleCallback(code, state string) (types.JwtTokens, error)
 	AuthorizeAccess(acctoken string) error
-	RefreshTokens(reftoken string) (types.SigninTokens, error)
+	RefreshTokens(reftoken string) (types.JwtTokens, error)
 }
 
 type UserService interface {

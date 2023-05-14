@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/dzemildupljak/auth-service/internal/utils"
+	"github.com/dzemildupljak/auth-service/types"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 )
@@ -21,6 +22,22 @@ func NewJwtRepo() *JwtRepo {
 	return &JwtRepo{
 		config: cnf,
 	}
+}
+
+func (jwtrepo *JwtRepo) GenerateTokens(usrId uuid.UUID, urole string) (types.JwtTokens, error) {
+	acctoken, err := jwtrepo.GenerateAccessToken(usrId, urole)
+	if err != nil {
+		return types.JwtTokens{}, err
+	}
+	reftoken, err := jwtrepo.GenerateRefreshToken(usrId, urole)
+	if err != nil {
+		return types.JwtTokens{}, err
+	}
+
+	return types.JwtTokens{
+		Access_token:  acctoken,
+		Refresh_token: reftoken,
+	}, nil
 }
 
 func (jwtrepo *JwtRepo) GenerateAccessToken(usrId uuid.UUID, urole string) (string, error) {
@@ -108,7 +125,6 @@ func (jwtrepo *JwtRepo) ValidateAccessToken(acctoken string) (uuid.UUID, error) 
 	}
 
 	return usrid, nil
-
 }
 
 func (jwtrepo *JwtRepo) GenerateRefreshToken(userId uuid.UUID, urole string) (string, error) {
@@ -117,8 +133,9 @@ func (jwtrepo *JwtRepo) GenerateRefreshToken(userId uuid.UUID, urole string) (st
 	tokenType := "refresh"
 
 	claims := utils.RefreshTokenCustomClaims{
-		UserId:  userID,
-		KeyType: tokenType,
+		UserId:   userID,
+		KeyType:  tokenType,
+		UserRole: urole,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(
 				time.Second * time.Duration(jwtrepo.config.JwtExpiration),
@@ -147,7 +164,6 @@ func (jwtrepo *JwtRepo) GenerateRefreshToken(userId uuid.UUID, urole string) (st
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 
 	return token.SignedString(signKey)
-
 }
 
 func (jwtrepo *JwtRepo) ValidateRefreshToken(reftoken string) (uuid.UUID, error) {

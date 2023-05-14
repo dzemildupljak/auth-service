@@ -25,7 +25,7 @@ func NewMngRepo(ctx context.Context, dbConn *mongo.Database) *MngRepo {
 	}
 }
 
-func (mngrepo *MngRepo) GetListusers() ([]domain.User, error) {
+func (mngrepo *MngRepo) GetUsers() ([]domain.User, error) {
 	collection := mngrepo.db.Collection("user")
 	var usrs []domain.User
 
@@ -82,7 +82,7 @@ func (mngrepo *MngRepo) GetUserByMail(mail string) (domain.User, error) {
 	return usr, nil
 }
 
-func (mngrepo *MngRepo) CreateRegisterUser(usr domain.User) (domain.User, error) {
+func (mngrepo *MngRepo) CreateUser(usr domain.User) (domain.User, error) {
 	collection := mngrepo.db.Collection("user")
 
 	usr.CreatedAt = time.Now()

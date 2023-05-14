@@ -28,38 +28,38 @@ func NewUserService(
 	}
 }
 
-func (user *UserService) GetAllUsers() ([]domain.User, error) {
-	usrs, err := user.prsrepo.GetListusers()
+func (service *UserService) GetAllUsers() ([]domain.User, error) {
+	users, err := service.prsrepo.GetUsers()
 
 	if err != nil {
-		fmt.Println("Userservice GetListusers falied")
+		fmt.Println("Userservice GetUsers falied", err)
 		utils.ErrorLogger.Println(err)
 	}
 
-	return usrs, err
+	return users, err
 }
 
-func (user *UserService) GetUserById(usrId uuid.UUID) (domain.User, error) {
-	usr, err := user.prsrepo.GetUserById(usrId)
+func (service *UserService) GetUserById(usrId uuid.UUID) (domain.User, error) {
+	usr, err := service.prsrepo.GetUserById(usrId)
 
 	if err != nil {
-		fmt.Println("Userservice GetUserById falied")
+		fmt.Println("Userservice GetUserById falied", err)
 		utils.ErrorLogger.Println(err)
 	}
 
 	return usr, err
 }
 
-func (user *UserService) DeleteUserById(usrId uuid.UUID) error {
+func (service *UserService) DeleteUserById(usrId uuid.UUID) error {
 
-	err := user.redisrepo.ClearItemByKey(usrId.String())
+	err := service.redisrepo.ClearItemByKey(usrId.String())
 	if err != nil {
 		fmt.Println("Userservice DeleteUserById redis falied")
 		utils.ErrorLogger.Println(err)
 		return err
 	}
 
-	err = user.prsrepo.DeleteUserById(usrId)
+	err = service.prsrepo.DeleteUserById(usrId)
 	fmt.Println(err)
 
 	if err != nil {

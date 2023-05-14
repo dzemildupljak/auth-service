@@ -2,6 +2,7 @@ package persistence
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/dzemildupljak/auth-service/internal/core/domain"
@@ -23,7 +24,7 @@ func NewPgRepo(ctx context.Context, dbConn *gorm.DB) *PgRepo {
 	}
 }
 
-func (pgrepo *PgRepo) GetListusers() ([]domain.User, error) {
+func (pgrepo *PgRepo) GetUsers() ([]domain.User, error) {
 	usrs := []domain.User{}
 
 	err := pgrepo.db.WithContext(pgrepo.ctx).Table("users").Find(&usrs).Error
@@ -69,7 +70,7 @@ func (pgrepo *PgRepo) GetUserByMail(mail string) (domain.User, error) {
 	return usr, err
 }
 
-func (pgrepo *PgRepo) CreateRegisterUser(usr domain.User) (domain.User, error) {
+func (pgrepo *PgRepo) CreateUser(usr domain.User) (domain.User, error) {
 	err := validator.Validate(usr)
 	if err != nil {
 		utils.ErrorLogger.Println(err)
@@ -80,13 +81,14 @@ func (pgrepo *PgRepo) CreateRegisterUser(usr domain.User) (domain.User, error) {
 	result := pgrepo.db.WithContext(pgrepo.ctx).Create(&usr)
 
 	if result.Error != nil {
+		fmt.Println("pg-repo CreateUser failed")
 		utils.ErrorLogger.Println(result.Error)
 	}
 
-	return usr, err
+	return usr, result.Error
 }
 
-func (pgrepo *PgRepo) RegisterOauthUser(usr domain.SignupOauthUserParams) error {
+func (pgrepo *PgRepo) CreateOauthUser(usr domain.OauthUserParams) error {
 	err := validator.Validate(usr)
 	if err != nil {
 		utils.ErrorLogger.Println(err)
@@ -97,16 +99,48 @@ func (pgrepo *PgRepo) RegisterOauthUser(usr domain.SignupOauthUserParams) error 
 
 	var cusr domain.User
 
-	utils.MapFields(usr, &cusr)
+	err = utils.MapFields(usr, &cusr)
+	if err != nil {
+		utils.ErrorLogger.Println(err)
+		return err
+	}
+
 	result := pgrepo.db.WithContext(pgrepo.ctx).Create(&cusr)
 
 	if result.Error != nil {
 		utils.ErrorLogger.Println(result.Error)
+		return result.Error
 	}
 
-	return err
+	return nil
 }
-func (pgrepo *PgRepo) UpdateRegisterUser(usr domain.User) (domain.User, error) {
+
+func (pgrepo *PgRepo) UpdateOauthUser(usr domain.OauthUserParams) error {
+
+	err := validator.Validate(usr)
+	if err != nil {
+		utils.ErrorLogger.Println(err)
+		return err
+	}
+
+	usr.UpdatedAt = time.Now()
+
+	var cusr domain.User
+	err = utils.MapFields(usr, &cusr)
+	if err != nil {
+		utils.ErrorLogger.Println(err)
+	}
+
+	result := pgrepo.db.WithContext(pgrepo.ctx).Table("users").Where("Id = ?", usr.Id).Updates(usr)
+	if result.Error != nil {
+		utils.ErrorLogger.Println(result.Error)
+		return result.Error
+	}
+
+	return nil
+}
+
+func (pgrepo *PgRepo) UpdateUser(usr domain.User) (domain.User, error) {
 	err := validator.Validate(usr)
 	if err != nil {
 		utils.ErrorLogger.Println(err)
